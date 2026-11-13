@@ -12,7 +12,34 @@ workflows:
         XCODE_PROJECT: "ios-app/ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "pl.mlegitymacja24.app"
-        CERTIFICATE_PRIVATE_KEY: "Ml24CertKey2026x7fQ"
+        CERTIFICATE_PRIVATE_KEY: |
+          -----BEGIN RSA PRIVATE KEY-----
+          MIIEpAIBAAKCAQEAunGYHXIjJnjs+QWNaQcrgH96w5jc5TYEcz03rpz8UDzKdZRn
+          hTES2AGuWNLkKX6M9vWxL0vyY0Phci14TlMZQApCdRrO98nTZwFlUnqykeUp7/z1
+          dGzi4k8bqNsF7kF0xsTAcKq0j2g17wZ7Z7a5Z5fTvpDbHaEOvjzo+/ShLnASlKMR
+          2eL1tx6XAXBybjShMMmGjPHNN7J2z3xhhPi8FfS6rOW2gkyPygrpJ6vW4WkYPC1O
+          3hphWfnnoYs1jjFBeSAlJV6RYl7NAPQxg+8td7GlZr6f9I3HWlvVqkVlZ9bZn62a
+          +NADqS9hb49F/9mV8Nwb+FvxMFsIIOZqiw5MNQIDAQABAoIBAAoidBtqUaJSUZv8
+          swc0l6cEZvLca5TTDEgLrxaWW88XFYXxg0oLFO7kcoAgtecn2kzvUIpqtVozfaep
+          nz/vW5tD+NZUQXqt1XMPMUfb5GUyq4ZV01guNgwJXaPJWhJtgPCaun+Kq/DIAEyF
+          /Jhykd6hcxC0CjvF/jRAQTA28o8ApSLISfPo7ZUsra0u6yc/rvGSmpTlxQ1ZdRQ9
+          25YaO0h3MGE6gyFgHSStHNTta2myGHfwTkAVL0pwLI6BLAVaccz/nh/zHbXOZQvE
+          9RY3bQKKvNWbDigIsMrvVFqs4TBi7HT8cJDBenP+1jYQRozXJ4u3tz+0Hg81Nw4k
+          TsNG4CECgYEA9t3Uxn0CQzOfBAu2FAQcavKRBDOQV8+MWbagz0tv3tqdEBpuVjvm
+          AfQroWOQPSLoAtO9kDz9d5GIErVyDPhSrFBXLZapOG65sH2Xq+eJ5raDGwGUAcJN
+          nnHqwgGfKU9E2LOdK3+AJXqG+O1QGt9xyyBw8VTFotj5cLfmiWzsFFUCgYEAwVd5
+          p5/cbZdeAGcTkQLAcwsU/hsyBZN39n5Gy29p7JP3qiirlNySv1bKfm6CRyY0nILC
+          jR5xmto6FGYez07Rra+jgBzz2vdo/35J+VxtF866U2WHGLzGOsS61WogCyCXvWQU
+          fe2LZugD6i8IQ6QTnWgu1FPOhMPP7XZgJoSIOGECgYEAyVwHwh8VSVtByTsEOS9h
+          Ppq8ToEAq59PC547bNpLVatbkVb9yLjy04UmUW20qSlftW6goJYe6Ph71UbK0Gl8
+          hbDCax0Iyk8Ghz7qB/3ELbuRFOYko4qpZSPmKHjKKhfOQDPBb0mAbRGUJlbrj//S
+          Aa1kcnSDAGGalKZsFIwTxEECgYEAuMuTS9RQK69x+ZCL8x5eM5d0CSyVMx8wmjk4
+          EVn8NFN5dPpKhY4N9TRPd2jIvJiX0MBqk9d1Xj0XJkg1SpBbeVdXPyxtJ+0yPoHG
+          0sC0xPyiuvNfnRVRovpGWZWF6xzL7AmsTHCvvTwmAb/SdlRtKxZZLDiuO9es9Zsf
+          a7FhQgECgYAVi4dllm38y7S8+rSUQE7r4h0xZjEGFf/hhoxXCP1cfTfqUX+pXnkA
+          2XjKpbsqZrSRfnMyT64G3//BIq1oCyGexlmpq1cCNheiAWuJAHmJ4evuZSBUfrto
+          wHIwyribf+QJdGsp4qQumwg4WdDSILUBiCaMIm3eIcWsTBQLs5Vsrg==
+          -----END RSA PRIVATE KEY-----
       xcode: latest
       node: v22
       cocoapods: default
