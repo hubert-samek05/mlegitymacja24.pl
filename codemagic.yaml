@@ -9,7 +9,7 @@ workflows:
       app_store_connect: mlegitymacja24
     environment:
       vars:
-        XCODE_PROJECT: "ios-app/ios/App/App.xcodeproj"
+        XCODE_WORKSPACE: "ios-app/ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID: "pl.mlegitymacja24.app"
         CERTIFICATE_PRIVATE_KEY: |
@@ -85,7 +85,7 @@ workflows:
         script: |
           xcode-project use-profiles
           if ! xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
+            --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"; then
             echo "======== XCODEBUILD ERRORS ========"
             grep -h "error:" /tmp/xcodebuild_logs/*.log 2>/dev/null | sort -u | head -50
