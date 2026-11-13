@@ -8,9 +8,6 @@ workflows:
       # (tak jak przy petvio - nazwa integracji: mlegitymacja24)
       app_store_connect: mlegitymacja24
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: pl.mlegitymacja24.app
       vars:
         XCODE_PROJECT: "ios-app/ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
