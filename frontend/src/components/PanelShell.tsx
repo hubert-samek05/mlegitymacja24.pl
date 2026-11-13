@@ -89,7 +89,7 @@ export function PanelShell({
       {/* ===== kolumna główna ===== */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* top bar (mobile) */}
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-ink/10 bg-paper/90 px-5 py-3 backdrop-blur-xl lg:hidden">
+        <header className="sticky top-[env(safe-area-inset-top)] z-40 flex items-center justify-between border-b border-ink/10 bg-paper/90 px-5 py-3 backdrop-blur-xl lg:hidden">
           <Link href="/" aria-label="mLegitymacja24 — strona główna">
             <Logo />
           </Link>

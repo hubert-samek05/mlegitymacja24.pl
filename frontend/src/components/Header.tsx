@@ -78,7 +78,7 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 transition-all duration-500 ${
+        className={`sticky top-[env(safe-area-inset-top)] z-50 transition-all duration-500 ${
           scrolled
             ? "border-b border-ink/[0.08] bg-paper/90 shadow-[0_1px_0_rgba(10,43,78,0.04)] backdrop-blur-xl"
             : "border-b border-transparent bg-paper/60 backdrop-blur-md"

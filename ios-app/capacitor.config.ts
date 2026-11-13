@@ -4,6 +4,7 @@ const config: CapacitorConfig = {
   appId: 'pl.mlegitymacja24.app',
   appName: 'mLegitymacja24',
   webDir: 'www',
+  appendUserAgent: ' mLegitymacja24App',
   server: {
     url: 'https://mlegitymacja24.pl/logowanie',
     cleartext: false,

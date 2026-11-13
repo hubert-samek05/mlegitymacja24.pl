@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,10 @@ const display = Plus_Jakarta_Sans({
   display: "swap",
   weight: ["500", "600", "700"],
 });
+
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "mLegitymacja24 — Twoje dokumenty zawsze przy Tobie",

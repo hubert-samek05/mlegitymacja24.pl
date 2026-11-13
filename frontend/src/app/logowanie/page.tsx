@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -43,6 +43,15 @@ export default function LogowaniePage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [inApp, setInApp] = useState(false);
+
+  useEffect(() => {
+    const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+    setInApp(
+      Boolean(w.Capacitor?.isNativePlatform?.()) ||
+        navigator.userAgent.includes("mLegitymacja24App")
+    );
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -115,16 +124,18 @@ export default function LogowaniePage() {
       <div className="relative flex flex-col bg-paper">
         <div className="absolute inset-0 bg-dots opacity-30 mask-fade-b" />
 
-        <div className="relative flex items-center justify-between px-6 py-5 lg:justify-end">
+        <div className="relative flex items-center justify-between px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] lg:justify-end">
           <Link href="/" className="lg:hidden" aria-label="mLegitymacja24 — strona główna">
             <Logo />
           </Link>
-          <Link
-            href="/"
-            className="text-[13px] font-medium text-ink-mute transition-colors hover:text-ink"
-          >
-            ← Wróć na stronę główną
-          </Link>
+          {!inApp && (
+            <Link
+              href="/"
+              className="text-[13px] font-medium text-ink-mute transition-colors hover:text-ink"
+            >
+              ← Wróć na stronę główną
+            </Link>
+          )}
         </div>
 
         <div className="relative flex flex-1 items-center justify-center px-6 pb-16 pt-6 sm:pt-10">
