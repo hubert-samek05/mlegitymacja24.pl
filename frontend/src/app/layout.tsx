@@ -17,6 +17,8 @@ const display = Plus_Jakarta_Sans({
 
 export const viewport: Viewport = {
   viewportFit: "cover",
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export const metadata: Metadata = {

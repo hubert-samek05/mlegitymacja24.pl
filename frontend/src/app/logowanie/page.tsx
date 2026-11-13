@@ -162,7 +162,7 @@ export default function LogowaniePage() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-ink/15 bg-white px-4 py-3 text-sm shadow-sm transition-colors focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
+                  className="mt-1.5 w-full rounded-md border border-ink/15 bg-white px-4 py-3 text-base shadow-sm transition-colors focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                 />
               </div>
               <div>
@@ -183,7 +183,7 @@ export default function LogowaniePage() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-ink/15 bg-white px-4 py-3 text-sm shadow-sm transition-colors focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
+                  className="mt-1.5 w-full rounded-md border border-ink/15 bg-white px-4 py-3 text-base shadow-sm transition-colors focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
                 />
               </div>
 

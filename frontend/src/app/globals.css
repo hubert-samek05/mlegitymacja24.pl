@@ -79,3 +79,12 @@ body {
     mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
   }
 }
+
+/* iOS/WKWebView: font >= 16px w polach wylacza auto-zoom przy fokusie (tylko urzadzenia dotykowe) */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
