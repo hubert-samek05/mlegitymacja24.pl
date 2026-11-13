@@ -92,7 +92,7 @@ workflows:
             exit 65
           fi
     artifacts:
-      - ios-app/build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
