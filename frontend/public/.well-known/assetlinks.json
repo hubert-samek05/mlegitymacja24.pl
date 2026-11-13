@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "mLegitymacja24.pl",
+      "sha256_cert_fingerprints": [
+        "D9:16:EE:6D:EF:63:33:19:F1:F3:A9:DA:BE:1A:57:96:03:78:D3:88:7B:C1:89:2B:D6:44:D5:77:39:EF:14:B0"
+      ]
+    }
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "packageId": "mLegitymacja24.pl",
+  "host": "mlegitymacja24.pl",
+  "name": "mLegitymacja24",
+  "launcherName": "mLegitymacja24",
+  "display": "standalone",
+  "themeColor": "#0b2557",
+  "themeColorDark": "#000000",
+  "navigationColor": "#0b2557",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#0b2557",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#FFFFFF",
+  "enableNotifications": false,
+  "startUrl": "/logowanie",
+  "iconUrl": "https://mlegitymacja24.pl/app-icon-512.png",
+  "maskableIconUrl": "https://mlegitymacja24.pl/app-icon-maskable-512.png",
+  "monochromeIconUrl": "https://mlegitymacja24.pl/app-icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "appVersion": "1.0.5",
+  "appVersionCode": 6,
+  "signingKey": {
+    "path": "/root/android-keys/mlegitymacja24.keystore",
+    "alias": "mlegitymacja24"
+  },
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://mlegitymacja24.pl/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "orientation": "portrait",
+  "fullScopeUrl": "https://mlegitymacja24.pl/",
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "minSdkVersion": 24
+}

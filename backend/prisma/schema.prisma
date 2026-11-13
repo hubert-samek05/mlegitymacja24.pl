@@ -1,0 +1,468 @@
+// mLegitymacja24 - schemat bazy danych
+// Platforma cyfrowych legitymacji zawodowych
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  COMPANY_STAFF
+  HOLDER
+}
+
+enum CompanyStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+enum CredentialStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  SUSPENDED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentMethod {
+  STRIPE
+  BANK_TRANSFER
+}
+
+enum TicketStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum VerificationResult {
+  VALID
+  EXPIRED
+  REVOKED
+  NOT_FOUND
+  SUSPENDED
+}
+
+// ---------------------------------------------------------------------------
+// USERS & AUTH
+// ---------------------------------------------------------------------------
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  phone             String?
+  passwordHash      String
+  role              UserRole
+  firstName         String
+  lastName          String
+  isActive          Boolean   @default(true)
+  emailVerifiedAt   DateTime?
+  twoFactorEnabled  Boolean   @default(false)
+  permissions       String[]  @default(["credentials.issue", "credentials.manage", "verifications.view"])
+  twoFactorSecret   String?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  company           Company?  @relation("CompanyUsers", fields: [companyId], references: [id])
+  companyId         String?
+
+  holderProfile     HolderProfile?
+
+  refreshTokens     RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  issuedCredentials Credential[]        @relation("IssuedByUser")
+  credentialTypeRequests CredentialTypeRequest[]
+  supportMessages   SupportMessage[]
+  supportTickets    SupportTicket[]
+
+  @@index([companyId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// COMPANIES (firmy szkoleniowe)
+// ---------------------------------------------------------------------------
+
+model Company {
+  id               String        @id @default(uuid())
+  name             String
+  nip              String        @unique
+  regon            String?
+  address          String?
+  city             String?
+  postalCode       String?
+  website          String?
+  logoUrl          String?
+  contactEmail     String
+  contactPhone     String?
+  status           CompanyStatus @default(PENDING_VERIFICATION)
+  verificationNote String?
+  verifiedAt       DateTime?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  users            User[]        @relation("CompanyUsers")
+  credentials      Credential[]
+  subscription     Subscription?
+  auditLogs        AuditLog[]
+  credentialTypeRequests CredentialTypeRequest[]
+  supportTickets   SupportTicket[]
+
+  @@map("companies")
+}
+
+// ---------------------------------------------------------------------------
+// CREDENTIAL TYPES (definiowalne typy legitymacji)
+// ---------------------------------------------------------------------------
+
+model CredentialType {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?
+  category       String?
+  defaultValidityMonths Int? @default(24)
+  fieldsSchema   Json?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  credentials    Credential[]
+  requests       CredentialTypeRequest[]
+
+  @@index([category])
+  @@map("credential_types")
+}
+
+// Zgłoszenia własnych typów legitymacji przez firmy - wymagają akceptacji Super Admina
+
+enum CredentialTypeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model CredentialTypeRequest {
+  id              String                      @id @default(uuid())
+  name            String
+  description     String?
+  category        String?
+  defaultValidityMonths Int?                  @default(24)
+  status          CredentialTypeRequestStatus @default(PENDING)
+  reviewNote      String?
+  reviewedAt      DateTime?
+  reviewedByUserId String?
+
+  company         Company                     @relation(fields: [companyId], references: [id])
+  companyId       String
+  createdByUser   User                        @relation(fields: [createdByUserId], references: [id])
+  createdByUserId String
+
+  credentialType  CredentialType?             @relation(fields: [credentialTypeId], references: [id])
+  credentialTypeId String?
+
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@map("credential_type_requests")
+}
+
+// ---------------------------------------------------------------------------
+// HOLDER PROFILE (absolwent)
+// ---------------------------------------------------------------------------
+
+model HolderProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photoUrl      String?
+  dateOfBirth   DateTime?
+  placeOfBirth  String?
+  address       String?
+  city          String?
+  postalCode    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  credentials   Credential[]
+
+  @@map("holder_profiles")
+}
+
+// ---------------------------------------------------------------------------
+// CREDENTIALS (legitymacje)
+// ---------------------------------------------------------------------------
+
+model Credential {
+  id                String            @id @default(uuid())
+  credentialNumber  String            @unique
+  companyNumber     String?           // numer legitymacji nadany przez firmę wystawiającą
+  securityCode      String?           @unique // identyfikator mLegitymacji - 16 znaków (A-Z, 0-9)
+
+  holder            HolderProfile     @relation(fields: [holderId], references: [id])
+  holderId          String
+
+  company           Company           @relation(fields: [companyId], references: [id])
+  companyId         String
+
+  credentialType    CredentialType    @relation(fields: [credentialTypeId], references: [id])
+  credentialTypeId  String
+
+  issuedByUser      User?             @relation("IssuedByUser", fields: [issuedByUserId], references: [id])
+  issuedByUserId    String?
+
+  issueDate         DateTime
+  expiryDate        DateTime?
+  expiryReminderSentAt DateTime?      // kiedy wysłano przypomnienie o zbliżającym się końcu ważności
+  status            CredentialStatus  @default(ACTIVE)
+  revokedAt         DateTime?
+  revokedReason     String?
+
+  extraData         Json?             // dane specyficzne dla danego typu legitymacji
+  photoUrl          String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  verificationLogs  VerificationLog[]
+
+  @@index([holderId])
+  @@index([companyId])
+  @@index([credentialTypeId])
+  @@map("credentials")
+}
+
+// ---------------------------------------------------------------------------
+// VERIFICATION LOGS
+// ---------------------------------------------------------------------------
+
+model VerificationLog {
+  id           String              @id @default(uuid())
+  credential   Credential?         @relation(fields: [credentialId], references: [id])
+  credentialId String?
+  result       VerificationResult
+  ipAddress    String?
+  userAgent    String?
+  location     String?
+  verifiedAt   DateTime            @default(now())
+
+  @@index([credentialId])
+  @@map("verification_logs")
+}
+
+// ---------------------------------------------------------------------------
+// SUBSCRIPTIONS & PAYMENTS
+// ---------------------------------------------------------------------------
+
+model SubscriptionPlan {
+  id                 String   @id @default(uuid())
+  name               String   @unique
+  maxCredentials     Int
+  maxStaffUsers      Int
+  monthlyPriceCents  Int
+  yearlyPriceCents   Int
+  stripeProductId        String?
+  stripePriceMonthlyId   String?
+  stripePriceYearlyId    String?
+  features           Json?
+  isActive           Boolean  @default(true)
+
+  subscriptions      Subscription[]
+  pendingSubscriptions Subscription[] @relation("PendingPlan")
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id            String              @id @default(uuid())
+  company       Company             @relation(fields: [companyId], references: [id])
+  companyId     String              @unique
+  plan          SubscriptionPlan    @relation(fields: [planId], references: [id])
+  planId        String
+  status        SubscriptionStatus  @default(TRIALING)
+  currentPeriodStart DateTime       @default(now())
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean        @default(false)
+  billingInterval    BillingInterval @default(MONTHLY)
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?    @unique
+  pendingPlanId          String?
+  pendingPlan            SubscriptionPlan? @relation("PendingPlan", fields: [pendingPlanId], references: [id])
+  pastDueSince           DateTime?
+
+  payments      Payment[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id             String       @id @default(uuid())
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  subscriptionId String
+  amountCents    Int
+  currency       String       @default("PLN")
+  status         String
+  providerRef    String?
+  invoiceUrl     String?
+  method         PaymentMethod @default(BANK_TRANSFER)
+  planId         String?
+  interval       BillingInterval?
+  reference      String?      @unique
+  failureReason  String?
+  proformaIssuedAt DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([subscriptionId])
+  @@map("payments")
+}
+
+// ---------------------------------------------------------------------------
+// NOTIFICATIONS
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String              @id @default(uuid())
+  user      User                @relation(fields: [userId], references: [id])
+  userId    String
+  channel   NotificationChannel
+  subject   String?
+  body      String
+  status    NotificationStatus  @default(PENDING)
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+// ---------------------------------------------------------------------------
+// AUDIT LOG
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+  company    Company? @relation(fields: [companyId], references: [id])
+  companyId  String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([companyId])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// SUPPORT (zgłoszenia firm do administratora platformy)
+// ---------------------------------------------------------------------------
+
+model SupportTicket {
+  id          String           @id @default(uuid())
+  number      Int              @unique @default(autoincrement())
+  company     Company          @relation(fields: [companyId], references: [id])
+  companyId   String
+  createdBy   User             @relation(fields: [createdById], references: [id])
+  createdById String
+  subject     String
+  category    String           @default("OTHER")
+  status      TicketStatus     @default(OPEN)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  messages    SupportMessage[]
+
+  @@index([companyId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        String        @id @default(uuid())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  String
+  author    User          @relation(fields: [authorId], references: [id])
+  authorId  String
+  isStaff   Boolean       @default(false)
+  body      String
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+  @@map("support_messages")
+}

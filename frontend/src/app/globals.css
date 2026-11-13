@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8f9fc;
+  --foreground: #0b2557;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b3c5e6 transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #b3c5e6;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::selection {
+  background: #0b2557;
+  color: #f8f9fc;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .bg-grid-light {
+    background-image:
+      linear-gradient(rgba(7, 22, 56, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(7, 22, 56, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(rgba(7, 22, 56, 0.10) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .bg-dots-light {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .text-gradient {
+    color: #d10f1a;
+  }
+
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
+
+  .mask-fade-x {
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+}

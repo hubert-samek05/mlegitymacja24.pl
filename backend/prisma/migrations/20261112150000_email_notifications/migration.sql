@@ -1,0 +1,19 @@
+-- Przypomnienia o wygasającej legitymacji
+ALTER TABLE "credentials" ADD COLUMN "expiryReminderSentAt" TIMESTAMP(3);
+
+-- Tokeny resetu hasła
+CREATE TABLE "password_reset_tokens" (
+    "id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "usedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "password_reset_tokens_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "password_reset_tokens_token_key" ON "password_reset_tokens"("token");
+CREATE INDEX "password_reset_tokens_userId_idx" ON "password_reset_tokens"("userId");
+
+ALTER TABLE "password_reset_tokens" ADD CONSTRAINT "password_reset_tokens_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

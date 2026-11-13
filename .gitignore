@@ -1,0 +1,24 @@
+node_modules/
+dist/
+.next/
+*.log
+.env
+.env.local
+uploads/*
+!uploads/.gitkeep
+tsconfig.tsbuildinfo
+
+# build artifacts & binaries
+*.aab
+*.apk
+*.ipa
+*.keystore
+android-app/build/
+android-app/app/build/
+android-app/.gradle/
+android-app/local.properties
+android-app/app/release/
+ios-app/ios/App/Pods/
+ios-app/ios/App/Podfile.lock
+*.tsbuildinfo
+*.idsig

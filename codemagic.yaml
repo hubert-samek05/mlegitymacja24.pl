@@ -1,0 +1,57 @@
+workflows:
+  ios-app-store:
+    name: mLegitymacja24 iOS (App Store)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      # Utworz w Codemagic: Team settings -> Integrations -> App Store Connect
+      # (tak jak przy petvio - nazwa integracji: mlegitymacja24)
+      app_store_connect: mlegitymacja24
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: pl.mlegitymacja24.app
+      vars:
+        XCODE_PROJECT: "ios-app/ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID: "pl.mlegitymacja24.app"
+      xcode: latest
+      node: v22
+      cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          cd ios-app
+          npm ci --no-audit --no-fund
+      - name: Capacitor sync iOS
+        script: |
+          cd ios-app
+          npx cap sync ios
+      - name: Increment build number
+        script: |
+          cd ios-app/ios/App
+          agvtool new-version -all "$BUILD_NUMBER"
+      - name: Build IPA
+        script: |
+          xcode-project use-profiles
+          if ! xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"; then
+            echo "======== XCODEBUILD ERRORS ========"
+            grep -h "error:" /tmp/xcodebuild_logs/*.log 2>/dev/null | sort -u | head -50
+            exit 65
+          fi
+    artifacts:
+      - ios-app/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
