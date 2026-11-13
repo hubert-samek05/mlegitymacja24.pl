@@ -37,6 +37,14 @@ workflows:
           npx cap sync ios
       - name: Set up keychain
         script: keychain initialize
+      - name: Diagnose Apple API access
+        script: |
+          echo "=== bundle ids ==="
+          app-store-connect bundle-ids list 2>&1 | head -30 || true
+          echo "=== certificates ==="
+          app-store-connect certificates list 2>&1 | head -30 || true
+          echo "=== profiles ==="
+          app-store-connect profiles list 2>&1 | head -30 || true
       - name: Fetch signing files
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
