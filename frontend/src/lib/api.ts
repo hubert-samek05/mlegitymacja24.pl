@@ -27,23 +27,29 @@ export function clearTokens() {
 
 let refreshPromise: Promise<boolean> | null = null;
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function tryRefreshToken(): Promise<boolean> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return false;
-  try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
-    });
-    if (!res.ok) return false;
-    const data = (await res.json()) as { accessToken?: string };
-    if (!data.accessToken) return false;
-    localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-    return true;
-  } catch {
-    return false;
-  }
+  const res = await fetch(`${API_URL}/auth/refresh`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken }),
+  });
+  if (!res.ok) return false;
+  const data = (await res.json()) as { accessToken?: string };
+  if (!data.accessToken) return false;
+  localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+  return true;
 }
 
 // Pojedynczy współdzielony refresh - przy równoległych 401 odświeżamy raz
@@ -68,7 +74,10 @@ function buildHeaders(withAuth: boolean): HeadersInit {
 async function parseResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "Wystąpił błąd podczas komunikacji z serwerem");
+    throw new ApiError(
+      data.error || "Wystąpił błąd podczas komunikacji z serwerem",
+      response.status
+    );
   }
   return data as T;
 }

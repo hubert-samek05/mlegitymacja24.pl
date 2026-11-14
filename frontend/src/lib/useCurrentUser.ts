@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiGet, clearTokens, getAccessToken, revokeSession } from "./api";
+import { apiGet, ApiError, clearTokens, getAccessToken, revokeSession } from "./api";
 
 export interface CurrentUser {
   id: string;
@@ -29,20 +29,45 @@ export function useCurrentUser(allowedRoles?: CurrentUser["role"][]) {
       return;
     }
 
-    apiGet<CurrentUser>("/users/me")
-      .then((data) => {
+    let cancelled = false;
+    let attempts = 0;
+
+    async function load() {
+      try {
+        const data = await apiGet<CurrentUser>("/users/me");
+        if (cancelled) return;
         if (allowedRoles && !allowedRoles.includes(data.role)) {
           router.replace("/logowanie");
           return;
         }
         setUser(data);
-      })
-      .catch((err) => {
-        clearTokens();
-        setError(err instanceof Error ? err.message : "Błąd uwierzytelniania");
-        router.replace("/logowanie");
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      } catch (err) {
+        if (cancelled) return;
+        // Tylko realne 401 wylogowuje — błąd sieci/restart serwera nie kasuje sesji
+        if (err instanceof ApiError && err.status === 401) {
+          clearTokens();
+          setError(err.message);
+          setLoading(false);
+          router.replace("/logowanie");
+          return;
+        }
+        attempts += 1;
+        if (attempts <= 8) {
+          setTimeout(load, 1500);
+          return;
+        }
+        setError(
+          err instanceof Error ? err.message : "Błąd połączenia z serwerem"
+        );
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

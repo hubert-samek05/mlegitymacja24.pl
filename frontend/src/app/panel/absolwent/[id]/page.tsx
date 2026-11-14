@@ -276,23 +276,16 @@ export default function PrezentacjaLegitymacjiPage() {
               <div className="relative overflow-hidden bg-brand-950 px-5 py-4 text-paper">
                 <Guilloche className="absolute inset-0 h-full w-full text-brand-300/25" />
                 <div className="relative flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/logo-v2.png"
-                        alt="mLegitymacja24"
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                    <div>
-                      <p className="font-display text-[15px] font-semibold tracking-wide">
-                        MLEGITYMACJA<span className="text-accent-400">24</span>
-                      </p>
-                      <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.28em] text-brand-300">
-                        Dokument cyfrowy
-                      </p>
-                    </div>
+                  <div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/logo-white.png"
+                      alt="mLegitymacja24"
+                      className="h-6 w-auto"
+                    />
+                    <p className="mt-1.5 text-[9px] font-medium uppercase tracking-[0.28em] text-brand-300">
+                      Dokument cyfrowy
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="font-display text-[13px] font-semibold uppercase tracking-[0.14em]">
