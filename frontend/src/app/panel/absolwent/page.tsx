@@ -7,6 +7,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 import { apiGet, API_URL } from "@/lib/api";
 import { mrz } from "@/lib/credential";
 import { Guilloche } from "@/components/SecurityDecor";
+import { QrCode } from "lucide-react";
 import { absolwentNavItems } from "@/lib/absolwentNav";
 
 interface Credential {
@@ -86,36 +87,29 @@ export default function AbsolwentPanelPage() {
       userLabel={`${user.firstName} ${user.lastName}`}
       userSubtitle="Portfel absolwenta"
     >
-      {/* ===== nagłówek portfela ===== */}
-      <div className="relative overflow-hidden rounded-2xl bg-brand-950 px-6 py-6 text-paper shadow-lg shadow-brand-950/20">
-        <Guilloche className="absolute inset-0 h-full w-full text-brand-300/20" />
-        <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
-        <div className="relative flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-white.png" alt="mLegitymacja24" className="h-5 w-auto" />
-            <h1 className="mt-3 break-words font-display text-xl font-semibold tracking-tight sm:text-2xl">
-              Witaj, {user.firstName}
-            </h1>
-            <p className="mt-1 text-xs text-brand-300">
-              Twój portfel dokumentów zawodowych
-            </p>
-          </div>
-          {!loading && (
-            <div className="shrink-0 text-right">
-              <p className="font-display text-3xl font-semibold leading-none">
-                {credentials.length}
-              </p>
-              <p className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-brand-300">
-                {credentials.length === 1
-                  ? "legitymacja"
-                  : credentials.length < 5
-                    ? "legitymacje"
-                    : "legitymacji"}
-              </p>
-            </div>
-          )}
+      {/* ===== nagłówek ===== */}
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-600">
+            Portfel
+          </p>
+          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            Witaj, {user.firstName}
+          </h1>
+          <p className="mt-1.5 text-sm text-ink-soft">
+            Twoje legitymacje zawodowe — zawsze pod ręką.
+          </p>
         </div>
+        {!loading && credentials.length > 0 && (
+          <span className="hidden shrink-0 rounded-md border border-ink/10 bg-white px-4 py-1.5 text-xs font-semibold text-ink-soft shadow-sm sm:block">
+            {credentials.length}{" "}
+            {credentials.length === 1
+              ? "legitymacja"
+              : credentials.length < 5
+                ? "legitymacje"
+                : "legitymacji"}
+          </span>
+        )}
       </div>
 
       {error && (
@@ -231,6 +225,13 @@ export default function AbsolwentPanelPage() {
                         : "Ważna bezterminowo"}
                     </p>
                   </div>
+                </div>
+
+                <div className="mt-3 flex justify-end">
+                  <span className="flex items-center gap-1.5 rounded-md border border-ink/15 bg-paper px-2.5 py-1.5 text-[10px] font-semibold text-ink transition-colors group-hover:border-accent-500/50 group-hover:text-accent-600">
+                    <QrCode className="h-3 w-3" />
+                    Okaż
+                  </span>
                 </div>
               </div>
 

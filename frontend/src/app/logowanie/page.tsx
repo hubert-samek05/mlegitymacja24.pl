@@ -5,7 +5,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
-import { apiPost, saveTokens } from "@/lib/api";
+import {
+  apiGet,
+  apiPost,
+  ApiError,
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  saveTokens,
+} from "@/lib/api";
 
 interface LoginResponse {
   accessToken: string;
@@ -44,6 +52,7 @@ export default function LogowaniePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [inApp, setInApp] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
@@ -51,6 +60,21 @@ export default function LogowaniePage() {
       Boolean(w.Capacitor?.isNativePlatform?.()) ||
         navigator.userAgent.includes("mLegitymacja24App")
     );
+
+    // Aktywna sesja -> przejdź od razu do panelu (np. aplikacja mobilna)
+    if (!getAccessToken() && !getRefreshToken()) {
+      setChecking(false);
+      return;
+    }
+    apiGet<{ role: keyof typeof roleRedirects }>("/users/me")
+      .then((me) => {
+        router.replace(roleRedirects[me.role] ?? "/panel/absolwent");
+      })
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 401) clearTokens();
+        setChecking(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -66,6 +90,14 @@ export default function LogowaniePage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper text-sm text-ink-mute">
+        Ładowanie...
+      </div>
+    );
   }
 
   return (
