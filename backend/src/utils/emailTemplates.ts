@@ -95,11 +95,8 @@ function baseEmail(o: BaseOptions): string {
     .map((p) => `<p style="margin:0 0 14px;font-family:${FONT};font-size:14px;line-height:1.6;color:${MUTE};">${p}</p>`)
     .join('');
 
-  const storeBadge = (href: string, top: string, bottom: string) => `
-        <a href="${href}" style="display:block;background:#0d1526;border-radius:9px;padding:10px 16px;text-decoration:none;text-align:center;">
-          <span style="display:block;font-family:${FONT};font-size:10px;line-height:1.2;color:#8b97b8;">${top}</span>
-          <span style="display:block;font-family:${FONT};font-size:15px;line-height:1.35;font-weight:700;color:#ffffff;">${bottom}</span>
-        </a>`;
+  const storeBadge = (href: string, img: string, alt: string) => `
+        <a href="${href}"><img src="${appUrl}/${img}" alt="${alt}" height="44" style="display:block;height:44px;border:0;border-radius:9px;"></a>`;
 
   const appButtonsHtml = `<tr><td style="padding:22px 0 6px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${LINE};">
@@ -109,8 +106,8 @@ function baseEmail(o: BaseOptions): string {
           <tr><td align="center" style="padding:0;">
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="padding-right:8px;">${storeBadge(APP_STORE_URL, 'Pobierz w', 'App&nbsp;Store')}</td>
-                <td style="padding-left:8px;">${storeBadge(PLAY_STORE_URL, 'Do pobrania w', 'Google&nbsp;Play')}</td>
+                <td style="padding-right:8px;">${storeBadge(APP_STORE_URL, 'email-badge-appstore.png', 'Pobierz w App Store')}</td>
+                <td style="padding-left:8px;">${storeBadge(PLAY_STORE_URL, 'email-badge-googleplay.png', 'Do pobrania w Google Play')}</td>
               </tr>
             </table>
           </td></tr>
