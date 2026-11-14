@@ -140,7 +140,7 @@ export default function UstawieniaPage() {
         </form>
 
         {/* bezpieczeństwo */}
-        <TwoFactorCard enabled={user.twoFactorEnabled} />
+        <TwoFactorCard enabled={user.twoFactorEnabled} method={user.twoFactorMethod} />
 
         <div className="rounded-lg border border-ink/10 bg-white p-6 shadow-card sm:p-7">
           <div className="flex items-center gap-3">

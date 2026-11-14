@@ -9,7 +9,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { recordAuditLog } from '../middleware/auditLog';
 import { env } from '../config/env';
 import { sendEmail } from '../utils/mailer';
-import { tplPasswordReset } from '../utils/emailTemplates';
+import { tplPasswordReset, tplTwoFactorCode } from '../utils/emailTemplates';
 import { generateTotpSecret, otpauthUrl, verifyTotp } from '../utils/totp';
 import { authenticate, AuthRequest } from '../middleware/auth';
 
@@ -32,6 +32,42 @@ function verifyTwoFactorPending(token: string): TwoFactorPendingPayload {
   const payload = jwt.verify(token, env.jwtSecret) as TwoFactorPendingPayload;
   if (payload.purpose !== '2fa-pending') throw new Error('bad purpose');
   return payload;
+}
+
+const EMAIL_CODE_TTL_MS = 10 * 60 * 1000;
+
+function hashEmailCode(code: string): string {
+  return crypto.createHash('sha256').update(code).digest('hex');
+}
+
+// Generuje i wysyła 6-cyfrowy kod e-mail; poprzednie kody unieważnia
+async function sendEmailCode(user: { id: string; email: string; firstName: string }) {
+  await prisma.passwordResetToken.updateMany({
+    where: { userId: user.id, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+  const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+  await prisma.passwordResetToken.create({
+    data: {
+      token: hashEmailCode(code),
+      userId: user.id,
+      expiresAt: new Date(Date.now() + EMAIL_CODE_TTL_MS),
+    },
+  });
+  const tpl = tplTwoFactorCode(user.firstName, code, 10);
+  await sendEmail(user.email, tpl.subject, tpl.html);
+}
+
+// Weryfikuje i zużywa kod e-mail; true = poprawny
+async function consumeEmailCode(userId: string, code: string): Promise<boolean> {
+  const record = await prisma.passwordResetToken.findUnique({
+    where: { token: hashEmailCode(code) },
+  });
+  if (!record || record.userId !== userId || record.usedAt || record.expiresAt < new Date()) {
+    return false;
+  }
+  await prisma.passwordResetToken.update({ where: { id: record.id }, data: { usedAt: new Date() } });
+  return true;
 }
 
 async function issueSession(user: { id: string; role: string; companyId: string | null }) {
@@ -73,9 +109,18 @@ router.post(
     }
 
     // Weryfikacja dwuetapowa — wydajemy token tymczasowy, sesję dopiero po kodzie
-    if (user.twoFactorEnabled && user.twoFactorSecret) {
+    if (user.twoFactorEnabled) {
+      if (user.twoFactorSecret) {
+        return res.json({
+          requiresTwoFactor: true,
+          method: 'TOTP',
+          pendingToken: signTwoFactorPending(user.id),
+        });
+      }
+      await sendEmailCode(user);
       return res.json({
         requiresTwoFactor: true,
+        method: 'EMAIL',
         pendingToken: signTwoFactorPending(user.id),
       });
     }
@@ -120,11 +165,14 @@ router.post(
     }
 
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
-    if (!user || !user.isActive || !user.twoFactorEnabled || !user.twoFactorSecret) {
+    if (!user || !user.isActive || !user.twoFactorEnabled) {
       return res.status(401).json({ error: 'Sesja logowania jest nieprawidłowa' });
     }
 
-    if (!verifyTotp(user.twoFactorSecret, String(req.body.code))) {
+    const codeOk = user.twoFactorSecret
+      ? verifyTotp(user.twoFactorSecret, String(req.body.code))
+      : await consumeEmailCode(user.id, String(req.body.code));
+    if (!codeOk) {
       return res.status(401).json({ error: 'Nieprawidłowy kod weryfikacyjny' });
     }
 
@@ -170,7 +218,28 @@ router.post(
   })
 );
 
-// 2FA — krok 2 konfiguracji: potwierdź kodem z aplikacji
+// 2FA — wysłanie kodu e-mail (włączanie metody e-mail lub wyłączanie)
+router.post(
+  '/2fa/email/send',
+  authenticate,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user) return res.status(404).json({ error: 'Użytkownik nie istnieje' });
+
+    const last = await prisma.passwordResetToken.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (last && Date.now() - last.createdAt.getTime() < 60_000) {
+      return res.status(429).json({ error: 'Kod został właśnie wysłany — odczekaj chwilę i sprawdź skrzynkę' });
+    }
+
+    await sendEmailCode(user);
+    res.json({ ok: true });
+  })
+);
+
+// 2FA — krok 2 konfiguracji: potwierdź kodem z aplikacji lub z e-maila
 router.post(
   '/2fa/enable',
   authenticate,
@@ -180,12 +249,13 @@ router.post(
       return res.status(400).json({ error: 'Brak kodu weryfikacyjnego' });
     }
     const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
-    if (!user?.twoFactorSecret) {
-      return res
-        .status(400)
-        .json({ error: 'Najpierw wygeneruj sekret — rozpocznij konfigurację od nowa' });
+    if (!user) {
+      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
     }
-    if (!verifyTotp(user.twoFactorSecret, String(req.body.code))) {
+    const codeOk = user.twoFactorSecret
+      ? verifyTotp(user.twoFactorSecret, String(req.body.code))
+      : await consumeEmailCode(user.id, String(req.body.code));
+    if (!codeOk) {
       return res.status(400).json({ error: 'Nieprawidłowy kod — spróbuj ponownie' });
     }
 
@@ -209,14 +279,17 @@ router.post(
       return res.status(400).json({ error: 'Podaj hasło i kod weryfikacyjny' });
     }
     const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
-    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+    if (!user || !user.twoFactorEnabled) {
       return res.status(400).json({ error: 'Weryfikacja dwuetapowa nie jest włączona' });
     }
     const validPassword = await comparePassword(String(req.body.password), user.passwordHash);
     if (!validPassword) {
       return res.status(401).json({ error: 'Nieprawidłowe hasło' });
     }
-    if (!verifyTotp(user.twoFactorSecret, String(req.body.code))) {
+    const codeOk = user.twoFactorSecret
+      ? verifyTotp(user.twoFactorSecret, String(req.body.code))
+      : await consumeEmailCode(user.id, String(req.body.code));
+    if (!codeOk) {
       return res.status(401).json({ error: 'Nieprawidłowy kod weryfikacyjny' });
     }
 

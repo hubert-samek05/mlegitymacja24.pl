@@ -14,6 +14,7 @@ export interface CurrentUser {
   companyId: string | null;
   permissions?: string[];
   twoFactorEnabled: boolean;
+  twoFactorMethod: "TOTP" | "EMAIL" | null;
   company?: { id: string; name: string; status: string } | null;
 }
 

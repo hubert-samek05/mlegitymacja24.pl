@@ -20,14 +20,21 @@ router.get(
       where: { id: req.user!.userId },
       select: {
         id: true, email: true, firstName: true, lastName: true, role: true,
-        companyId: true, permissions: true, twoFactorEnabled: true, phone: true, createdAt: true,
+        companyId: true, permissions: true, twoFactorEnabled: true, twoFactorSecret: true, phone: true, createdAt: true,
         company: { select: { id: true, name: true, status: true } },
         holderProfile: {
           select: { photoUrl: true, dateOfBirth: true, address: true, city: true, postalCode: true },
         },
       },
     });
-    res.json(user);
+    if (!user) {
+      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
+    }
+    const { twoFactorSecret, ...rest } = user;
+    res.json({
+      ...rest,
+      twoFactorMethod: user.twoFactorEnabled ? (twoFactorSecret ? 'TOTP' : 'EMAIL') : null,
+    });
   })
 );
 

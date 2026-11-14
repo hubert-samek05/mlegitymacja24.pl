@@ -19,6 +19,7 @@ interface LoginResponse {
   accessToken?: string;
   refreshToken?: string;
   requiresTwoFactor?: boolean;
+  method?: "TOTP" | "EMAIL";
   pendingToken?: string;
   user?: {
     role: "SUPER_ADMIN" | "COMPANY_ADMIN" | "COMPANY_STAFF" | "HOLDER";
@@ -82,6 +83,7 @@ export default function LogowaniePage() {
   }, []);
 
   const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<"TOTP" | "EMAIL">("TOTP");
   const [twoFactorCode, setTwoFactorCode] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -92,6 +94,7 @@ export default function LogowaniePage() {
       const data = await apiPost<LoginResponse>("/auth/login", { email, password });
       if (data.requiresTwoFactor && data.pendingToken) {
         setPendingToken(data.pendingToken);
+        setTwoFactorMethod(data.method === "EMAIL" ? "EMAIL" : "TOTP");
         setTwoFactorCode("");
         return;
       }
@@ -219,7 +222,9 @@ export default function LogowaniePage() {
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
               {pendingToken
-                ? "Otwórz aplikację uwierzytelniającą i wpisz 6-cyfrowy kod dla swojego konta."
+                ? twoFactorMethod === "EMAIL"
+                  ? "Wysłaliśmy 6-cyfrowy kod na Twój adres e-mail. Sprawdź skrzynkę (także folder spam) i wpisz kod poniżej."
+                  : "Otwórz aplikację uwierzytelniającą i wpisz 6-cyfrowy kod dla swojego konta."
                 : "Dostęp dla firm szkoleniowych oraz absolwentów posiadających konto."}
             </p>
 

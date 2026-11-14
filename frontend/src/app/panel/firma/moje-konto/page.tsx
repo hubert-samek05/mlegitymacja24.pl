@@ -139,7 +139,7 @@ export default function MojeKontoPage() {
         </form>
 
         <div className="lg:col-span-2">
-          <TwoFactorCard enabled={user.twoFactorEnabled} />
+          <TwoFactorCard enabled={user.twoFactorEnabled} method={user.twoFactorMethod} />
         </div>
       </div>
     </PanelShell>

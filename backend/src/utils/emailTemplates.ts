@@ -586,6 +586,24 @@ export function tplPasswordReset(name: string, resetUrl: string): EmailContent {
   };
 }
 
+export function tplTwoFactorCode(firstName: string, code: string, minutes: number): EmailContent {
+  return {
+    subject: `${code} — Twój kod weryfikacyjny mLegitymacja24`,
+    html: baseEmail({
+      title: 'Kod weryfikacyjny',
+      greeting: `Dzień dobry ${esc(firstName)},`,
+      paragraphs: [
+        'Twój jednorazowy kod weryfikacyjny do konta mLegitymacja24:',
+      ],
+      rows: [{ label: 'Kod', value: code }],
+      highlight: {
+        text: `Kod jest ważny przez ${minutes} minut. Jeśli to nie Ty próbowałeś się zalogować, zignoruj wiadomość i rozważ zmianę hasła.`,
+        tone: 'warn',
+      },
+    }),
+  };
+}
+
 export function tplAppInstallReminder(firstName: string): EmailContent {
   return {
     subject: 'Twoja legitymacja zawsze pod ręką — zainstaluj aplikację',
