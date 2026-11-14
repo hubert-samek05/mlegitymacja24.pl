@@ -252,7 +252,7 @@ export function SubscriptionGate({ children }: { children: React.ReactNode }) {
       {children}
       {open && (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-ink/55 backdrop-blur-sm">
-          <div className="flex min-h-full items-center justify-center p-4 sm:p-8">
+          <div className="flex min-h-full items-center justify-center px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-8 sm:pb-8">
             <div id="sub-gate-modal" className="relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl">
               <button
                 onClick={() => setOpen(false)}

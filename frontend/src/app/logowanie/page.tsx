@@ -124,7 +124,7 @@ export default function LogowaniePage() {
       <div className="relative flex flex-col bg-paper">
         <div className="absolute inset-0 bg-dots opacity-30 mask-fade-b" />
 
-        <div className="relative flex items-center justify-between px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] lg:justify-end">
+        <div className="relative flex items-center justify-between px-6 py-5 lg:justify-end">
           <Link href="/" className="lg:hidden" aria-label="mLegitymacja24 — strona główna">
             <Logo />
           </Link>

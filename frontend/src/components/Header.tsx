@@ -201,7 +201,7 @@ export function Header() {
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="fixed inset-y-0 right-0 z-[70] flex w-[85%] max-w-sm flex-col bg-paper shadow-card lg:hidden"
             >
-              <div className="flex items-center justify-between border-b border-ink/10 px-6 py-4">
+              <div className="flex items-center justify-between border-b border-ink/10 px-6 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
                 <Logo />
                 <button
                   onClick={() => setMenuOpen(false)}

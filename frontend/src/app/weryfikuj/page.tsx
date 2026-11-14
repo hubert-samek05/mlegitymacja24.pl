@@ -292,7 +292,7 @@ function WeryfikujContent() {
       {/* Skaner QR — pełny ekran */}
       {scanOpen && (
         <div className="fixed inset-0 z-50 flex flex-col bg-brand-950">
-          <div className="flex items-center justify-between px-5 py-4">
+          <div className="flex items-center justify-between px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
             <p className="text-sm font-semibold text-paper">Skanowanie legitymacji</p>
             <button
               type="button"

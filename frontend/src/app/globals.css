@@ -20,6 +20,9 @@ body {
   color: var(--foreground);
   background: var(--background);
   -webkit-font-smoothing: antialiased;
+  /* iOS/WKWebView: trzymaj tresc pod notchem i wskaznikiem home; na desktopie env() = 0 */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 ::-webkit-scrollbar {

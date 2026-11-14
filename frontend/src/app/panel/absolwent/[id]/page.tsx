@@ -135,7 +135,7 @@ export default function PrezentacjaLegitymacjiPage() {
   const status = credential ? statusMeta[credential.status] : null;
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-brand-950 text-paper">
+    <div className="relative -mt-[env(safe-area-inset-top)] flex min-h-screen flex-col overflow-hidden bg-brand-950 pt-[env(safe-area-inset-top)] text-paper">
       <div className="absolute inset-0 bg-grid opacity-30" />
       <div className="absolute -top-32 left-1/2 h-80 w-[560px] -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />
 
@@ -375,7 +375,7 @@ export default function PrezentacjaLegitymacjiPage() {
             <div className="absolute inset-0 bg-grid opacity-30" />
             <div className="absolute -top-32 left-1/2 h-80 w-[560px] -translate-x-1/2 rounded-full bg-brand-500/20 blur-3xl" />
 
-            <header className="relative flex items-center justify-between px-5 py-4">
+            <header className="relative flex items-center justify-between px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-300">
                 Weryfikacja
               </p>
