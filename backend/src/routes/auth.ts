@@ -9,7 +9,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { recordAuditLog } from '../middleware/auditLog';
 import { env } from '../config/env';
 import { sendEmail } from '../utils/mailer';
-import { tplHolderWelcome, tplPasswordReset } from '../utils/emailTemplates';
+import { tplPasswordReset } from '../utils/emailTemplates';
 import { generateTotpSecret, otpauthUrl, verifyTotp } from '../utils/totp';
 import { authenticate, AuthRequest } from '../middleware/auth';
 
@@ -50,65 +50,6 @@ async function issueSession(user: { id: string; role: string; companyId: string 
   });
   return { accessToken, refreshToken };
 }
-
-router.post(
-  '/register-holder',
-  [
-    body('email').isEmail(),
-    body('password').isLength({ min: 8 }),
-    body('firstName').notEmpty(),
-    body('lastName').notEmpty(),
-  ],
-  asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { email, password, firstName, lastName, phone } = req.body;
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return res.status(409).json({ error: 'Konto z tym adresem e-mail już istnieje' });
-    }
-
-    const passwordHash = await hashPassword(password);
-
-    const user = await prisma.user.create({
-      data: {
-        email,
-        phone,
-        passwordHash,
-        role: 'HOLDER',
-        firstName,
-        lastName,
-        holderProfile: { create: {} },
-      },
-    });
-
-    await recordAuditLog({ userId: user.id, action: 'USER_REGISTERED', entityType: 'User', entityId: user.id });
-
-    const welcome = tplHolderWelcome(firstName);
-    await sendEmail(email, welcome.subject, welcome.html).catch(() => undefined);
-
-    const accessToken = signAccessToken({ userId: user.id, role: user.role, companyId: null });
-    const refreshToken = signRefreshToken({ userId: user.id });
-
-    await prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId: user.id,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
-    });
-
-    res.status(201).json({
-      accessToken,
-      refreshToken,
-      user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
-    });
-  })
-);
 
 router.post(
   '/login',

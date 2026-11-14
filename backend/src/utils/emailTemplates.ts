@@ -570,22 +570,6 @@ export function tplPasswordReset(name: string, resetUrl: string): EmailContent {
   };
 }
 
-export function tplHolderWelcome(firstName: string): EmailContent {
-  return {
-    subject: 'Witaj w mLegitymacja24 — Twoje konto jest gotowe',
-    html: baseEmail({
-      title: 'Twoje konto zostało utworzone',
-      greeting: `Dzień dobry ${esc(firstName)},`,
-      paragraphs: [
-        'utworzyłeś konto w cyfrowym portfelu mLegitymacja24.',
-        'Gdy firma szkoleniowa wystawi Ci legitymację, pojawi się w Twoim portfelu automatycznie — poinformujemy Cię o tym osobną wiadomością.',
-        'Zainstaluj aplikację mobilną mLegitymacja24 (linki poniżej) — dokumenty masz wtedy zawsze przy sobie, gotowe do pokazania kodem QR do weryfikacji.',
-      ],
-      cta: { label: 'Otwórz portfel legitymacji', url: panel('/logowanie') },
-    }),
-  };
-}
-
 export function tplStaffInvited(firstName: string, companyName: string, email: string): EmailContent {
   return {
     subject: `Zaproszenie do zespołu — ${companyName}`,
