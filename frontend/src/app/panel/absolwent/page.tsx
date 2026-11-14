@@ -48,7 +48,7 @@ const filters = [
 ] as const;
 
 export default function AbsolwentPanelPage() {
-  const { user, loading: userLoading } = useCurrentUser(["HOLDER"]);
+  const { user, loading: userLoading } = useCurrentUser();
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

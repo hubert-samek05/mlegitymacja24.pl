@@ -157,9 +157,9 @@ async function issueCredential(
     include: { holderProfile: true },
   });
 
-  if (user && user.role !== 'HOLDER') {
-    throw new Error('Ten adres e-mail należy do konta firmowego lub administracyjnego — podaj prywatny adres absolwenta');
-  }
+  // Konto firmowe/administracyjne też może być absolwentem — dowiązujemy
+  // holderProfile do istniejącego konta; portfel jest dostępny po zalogowaniu
+  // niezależnie od roli (endpointy portfela dopasowują po holderId).
 
   let temporaryPassword: string | null = null;
 
@@ -399,11 +399,11 @@ router.get(
   })
 );
 
-// Legitymacje posiadacza (własny portfel)
+// Legitymacje posiadacza (własny portfel) — dowolna rola; właścicielstwo
+// jest egzekwowane dopasowaniem do holderProfile zalogowanego użytkownika
 router.get(
   '/my',
   authenticate,
-  authorize('HOLDER'),
   asyncHandler(async (req: AuthRequest, res) => {
     const holderProfile = await prisma.holderProfile.findUnique({ where: { userId: req.user!.userId } });
     if (!holderProfile) {
@@ -418,11 +418,10 @@ router.get(
   })
 );
 
-// Szczegóły pojedynczej legitymacji - tylko właściciel
+// Szczegóły pojedynczej legitymacji - tylko właściciel (dowolna rola)
 router.get(
   '/:id',
   authenticate,
-  authorize('HOLDER'),
   asyncHandler(async (req: AuthRequest, res) => {
     const { id } = req.params;
     const holderProfile = await prisma.holderProfile.findUnique({ where: { userId: req.user!.userId } });
@@ -445,7 +444,6 @@ router.get(
 router.get(
   '/:id/qr-token',
   authenticate,
-  authorize('HOLDER'),
   asyncHandler(async (req: AuthRequest, res) => {
     const { id } = req.params;
     const holderProfile = await prisma.holderProfile.findUnique({ where: { userId: req.user!.userId } });

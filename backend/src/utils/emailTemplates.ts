@@ -584,6 +584,25 @@ export function tplPasswordReset(name: string, resetUrl: string): EmailContent {
   };
 }
 
+export function tplAppInstallReminder(firstName: string): EmailContent {
+  return {
+    subject: 'Twoja legitymacja zawsze pod ręką — zainstaluj aplikację',
+    html: baseEmail({
+      title: 'Miej dokumenty zawsze przy sobie',
+      greeting: `Dzień dobry ${esc(firstName)},`,
+      paragraphs: [
+        'masz już cyfrową legitymację w portfelu mLegitymacja24. Zainstaluj darmową aplikację mobilną, żeby mieć dokument zawsze przy sobie — w telefonie, nie w e-mailu.',
+        'W aplikacji okażesz legitymację kodem QR w kilka sekund, a pracodawca lub klient zweryfikuje ją od razu na publicznej stronie weryfikacyjnej. Przypomnimy Ci też, gdy dokument będzie zbliżał się do końca ważności.',
+      ],
+      highlight: { text: 'W aplikacji zaloguj się tym samym adresem e-mail i hasłem, którym logujesz się w portalu.' },
+      cta: { label: 'Otwórz portfel w przeglądarce', url: panel('/logowanie') },
+      afterCta: [
+        'Aplikacja jest darmowa i nie wymaga dodatkowej rejestracji — to ten sam portfel, wygodniejszy w codziennym użyciu.',
+      ],
+    }),
+  };
+}
+
 export function tplStaffInvited(firstName: string, companyName: string, email: string): EmailContent {
   return {
     subject: `Zaproszenie do zespołu — ${companyName}`,

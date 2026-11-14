@@ -10,7 +10,7 @@ import { TwoFactorCard } from "@/components/TwoFactorCard";
 
 export default function UstawieniaPage() {
   const router = useRouter();
-  const { user, loading: userLoading } = useCurrentUser(["HOLDER"]);
+  const { user, loading: userLoading } = useCurrentUser();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

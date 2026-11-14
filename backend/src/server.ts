@@ -14,7 +14,7 @@ import credentialRoutes from './routes/credentials';
 import verifyRoutes from './routes/verify';
 import userRoutes from './routes/users';
 import billingRoutes, { stripeWebhookHandler, runDunningCheck, cleanupStalePayments } from './routes/billing';
-import { runCredentialReminderCheck } from './utils/expiryReminders';
+import { runAppOnboardingCheck, runCredentialReminderCheck } from './utils/expiryReminders';
 import supportRoutes from './routes/support';
 
 const app = express();
@@ -65,6 +65,6 @@ app.listen(env.port, () => {
 // Dunning: raz dziennie ponawia nieudane płatności i degraduje plan po 7 dniach zaległości
 // + przypomnienia o legitymacjach wygasających w ciągu 30 dni
 const runBillingChecks = () =>
-  Promise.all([runDunningCheck(), cleanupStalePayments(), runCredentialReminderCheck()]).catch((e) => console.error('Billing check error:', e));
+  Promise.all([runDunningCheck(), cleanupStalePayments(), runCredentialReminderCheck(), runAppOnboardingCheck()]).catch((e) => console.error('Billing check error:', e));
 setTimeout(runBillingChecks, 30_000);
 setInterval(runBillingChecks, 24 * 3600 * 1000);

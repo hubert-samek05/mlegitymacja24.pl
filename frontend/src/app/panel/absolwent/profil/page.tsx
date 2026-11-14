@@ -30,7 +30,7 @@ const initialForm = {
 };
 
 export default function ProfilPage() {
-  const { user, loading: userLoading } = useCurrentUser(["HOLDER"]);
+  const { user, loading: userLoading } = useCurrentUser();
   const [form, setForm] = useState(initialForm);
   const [identity, setIdentity] = useState({ firstName: "", lastName: "", dateOfBirth: "" });
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);

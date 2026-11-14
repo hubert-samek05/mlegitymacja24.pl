@@ -25,7 +25,7 @@ function formatDate(iso: string) {
 }
 
 export default function PowiadomieniaPage() {
-  const { user, loading: userLoading } = useCurrentUser(["HOLDER"]);
+  const { user, loading: userLoading } = useCurrentUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
