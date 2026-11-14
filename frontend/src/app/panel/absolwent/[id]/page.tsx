@@ -7,7 +7,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Expand, X } from "lucide-react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { apiGet, API_URL } from "@/lib/api";
-import { formatSecurityCode } from "@/lib/credential";
+import { formatSecurityCode, mrz } from "@/lib/credential";
+import { Guilloche, Seal } from "@/components/SecurityDecor";
 
 interface CredentialDetail {
   id: string;
@@ -52,111 +53,6 @@ const statusMeta: Record<
 function resolvePhoto(url: string | null | undefined): string | null {
   if (!url) return null;
   return url.startsWith("http") ? url : `${API_HOST}${url}`;
-}
-
-function mrz(input: string): string {
-  const clean = input
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/ł/g, "l")
-    .replace(/Ł/g, "L")
-    .toUpperCase()
-    .replace(/[^A-Z0-9<]/g, "<");
-  return (clean + "<".repeat(38)).slice(0, 38);
-}
-
-function Guilloche({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 400 60"
-      preserveAspectRatio="none"
-      className={className}
-      aria-hidden
-    >
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <path
-          key={i}
-          d={`M-20 ${10 + i * 8} C 60 ${-14 + i * 8}, 140 ${34 + i * 8}, 220 ${
-            10 + i * 8
-          } S 380 ${-14 + i * 8}, 440 ${10 + i * 8}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="0.8"
-        />
-      ))}
-    </svg>
-  );
-}
-
-function Seal({
-  status,
-  label,
-}: {
-  status: CredentialDetail["status"];
-  label: string;
-}) {
-  const color =
-    status === "ACTIVE"
-      ? "#059669"
-      : status === "EXPIRED"
-        ? "#d97706"
-        : status === "REVOKED"
-          ? "#dc2626"
-          : "#6b7280";
-  const arc = `MLEGITYMACJA24 · ${label.toUpperCase()} · `;
-  return (
-    <svg
-      viewBox="0 0 96 96"
-      className="absolute -top-1 right-0 h-[72px] w-[72px] -rotate-12 opacity-90"
-      aria-hidden
-    >
-      <defs>
-        <path
-          id="sealArcTop"
-          d="M48,48 m-34,0 a34,34 0 1,1 68,0 a34,34 0 1,1 -68,0"
-        />
-      </defs>
-      <circle cx="48" cy="48" r="44" fill="none" stroke={color} strokeWidth="1.6" />
-      <circle
-        cx="48"
-        cy="48"
-        r="26"
-        fill="none"
-        stroke={color}
-        strokeWidth="1"
-        strokeDasharray="2 2"
-      />
-      <text
-        fill={color}
-        fontSize="9"
-        fontWeight="700"
-        letterSpacing="1.6"
-        fontFamily="inherit"
-      >
-        <textPath href="#sealArcTop" startOffset="0">
-          {arc + arc}
-        </textPath>
-      </text>
-      {status === "ACTIVE" ? (
-        <path
-          d="M36 49 l8 8 l16 -17"
-          fill="none"
-          stroke={color}
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      ) : (
-        <path
-          d="M38 38 l20 20 M58 38 l-20 20"
-          fill="none"
-          stroke={color}
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-      )}
-    </svg>
-  );
 }
 
 export default function PrezentacjaLegitymacjiPage() {
@@ -432,7 +328,11 @@ export default function PrezentacjaLegitymacjiPage() {
                     ) : null}
 
                     {/* pieczęć statusu */}
-                    <Seal status={credential.status} label={status.label} />
+                    <Seal
+                      status={credential.status}
+                      label={status.label}
+                      className="absolute -top-1 right-0 h-[72px] w-[72px] -rotate-12 opacity-90"
+                    />
                   </div>
                 </div>
               </div>

@@ -2,6 +2,17 @@ export function formatSecurityCode(code: string | null | undefined): string {
   return code ? (code.match(/.{1,4}/g) ?? [code]).join(" ") : "—";
 }
 
+export function mrz(input: string, length = 38): string {
+  const clean = input
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ł/g, "l")
+    .replace(/Ł/g, "L")
+    .toUpperCase()
+    .replace(/[^A-Z0-9<]/g, "<");
+  return (clean + "<".repeat(length)).slice(0, length);
+}
+
 export const PERMISSION_OPTIONS = [
   { key: "credentials.issue", label: "Wystawianie legitymacji", hint: "Może wystawiać pojedyncze legitymacje absolwentom." },
   { key: "credentials.import", label: "Import zbiorczy", hint: "Może wystawiać legitymacje z pliku CSV/Excel." },

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { PanelShell } from "@/components/PanelShell";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { apiGet, API_URL } from "@/lib/api";
-import { formatSecurityCode } from "@/lib/credential";
+import { mrz } from "@/lib/credential";
+import { Guilloche } from "@/components/SecurityDecor";
 import { absolwentNavItems } from "@/lib/absolwentNav";
 
 interface Credential {
@@ -85,29 +86,36 @@ export default function AbsolwentPanelPage() {
       userLabel={`${user.firstName} ${user.lastName}`}
       userSubtitle="Portfel absolwenta"
     >
-      {/* ===== nagłówek ===== */}
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent-600">
-            Portfel
-          </p>
-          <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            Witaj, {user.firstName}
-          </h1>
-          <p className="mt-1.5 text-sm text-ink-soft">
-            Twoje legitymacje zawodowe — zawsze pod ręką.
-          </p>
+      {/* ===== nagłówek portfela ===== */}
+      <div className="relative overflow-hidden rounded-2xl bg-brand-950 px-6 py-6 text-paper shadow-lg shadow-brand-950/20">
+        <Guilloche className="absolute inset-0 h-full w-full text-brand-300/20" />
+        <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-500/20 blur-3xl" />
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-white.png" alt="mLegitymacja24" className="h-5 w-auto" />
+            <h1 className="mt-3 break-words font-display text-xl font-semibold tracking-tight sm:text-2xl">
+              Witaj, {user.firstName}
+            </h1>
+            <p className="mt-1 text-xs text-brand-300">
+              Twój portfel dokumentów zawodowych
+            </p>
+          </div>
+          {!loading && (
+            <div className="shrink-0 text-right">
+              <p className="font-display text-3xl font-semibold leading-none">
+                {credentials.length}
+              </p>
+              <p className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-brand-300">
+                {credentials.length === 1
+                  ? "legitymacja"
+                  : credentials.length < 5
+                    ? "legitymacje"
+                    : "legitymacji"}
+              </p>
+            </div>
+          )}
         </div>
-        {!loading && credentials.length > 0 && (
-          <span className="hidden shrink-0 rounded-md border border-ink/10 bg-white px-4 py-1.5 text-xs font-semibold text-ink-soft shadow-sm sm:block">
-            {credentials.length}{" "}
-            {credentials.length === 1
-              ? "legitymacja"
-              : credentials.length < 5
-                ? "legitymacje"
-                : "legitymacji"}
-          </span>
-        )}
       </div>
 
       {error && (
@@ -141,7 +149,7 @@ export default function AbsolwentPanelPage() {
           {[0, 1, 2].map((i) => (
             <div
               key={i}
-              className="h-44 animate-pulse rounded-lg bg-ink/[0.06]"
+              className="h-52 animate-pulse rounded-xl bg-ink/[0.06]"
             />
           ))}
         </div>
@@ -165,15 +173,34 @@ export default function AbsolwentPanelPage() {
             <Link
               key={credential.id}
               href={`/panel/absolwent/${credential.id}`}
-              className="group block overflow-hidden rounded-md border border-ink/10 bg-white shadow-card transition-all duration-300  hover:border-ink/20 hover:shadow-card"
+              className={`group block overflow-hidden rounded-xl border border-ink/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-950/10 ${
+                credential.status !== "ACTIVE" ? "opacity-80" : ""
+              }`}
             >
               {/* pasek dokumentu */}
-              <div className="h-1 bg-gradient-to-r from-brand-950 via-brand-800 to-accent-600" />
+              <div className="relative flex items-center justify-between overflow-hidden bg-brand-950 px-4 py-2.5">
+                <Guilloche className="absolute inset-0 h-full w-full text-brand-300/20" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-white.png"
+                  alt=""
+                  className="relative h-3.5 w-auto opacity-95"
+                />
+                <span className="relative flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${statusMeta[credential.status].dot}`}
+                  />
+                  <span className="text-paper/90">
+                    {statusMeta[credential.status].label}
+                  </span>
+                </span>
+              </div>
 
-              <div className="p-5">
+              {/* korpus */}
+              <div className="p-4">
                 <div className="flex gap-4">
                   {/* miniaturka zdjęcia */}
-                  <div className="h-[64px] w-[50px] shrink-0 overflow-hidden rounded-md border border-ink/10 bg-paper">
+                  <div className="h-[68px] w-[52px] shrink-0 overflow-hidden rounded border border-ink/15 bg-paper">
                     {resolvePhoto(credential.photoUrl) ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -189,39 +216,37 @@ export default function AbsolwentPanelPage() {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="min-w-0 break-words font-display text-[15px] font-semibold leading-snug text-ink">
-                        {credential.credentialType.name}
-                      </h3>
-                      <span
-                        className={`mt-0.5 flex shrink-0 items-center gap-1.5 text-[11px] font-medium ${statusMeta[credential.status].text}`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${statusMeta[credential.status].dot}`} />
-                        {statusMeta[credential.status].label}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-ink-soft">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-mute">
+                      Legitymacja zawodowa
+                    </p>
+                    <h3 className="mt-0.5 break-words font-display text-[15px] font-semibold leading-snug text-ink">
+                      {credential.credentialType.name}
+                    </h3>
+                    <p className="mt-1 truncate text-xs text-ink-soft">
                       {credential.company.name}
                     </p>
-                    <p className="mt-1.5 break-all text-[11px] text-ink-mute">
-                      Nr: <span className="font-medium text-ink-soft">{credential.companyNumber ?? credential.credentialNumber}</span>
-                    </p>
-                    <p className="mt-0.5 font-mono text-[11px] tracking-wide text-ink-mute">
-                      ID: <span className="font-medium text-ink-soft">{formatSecurityCode(credential.securityCode)}</span>
+                    <p className="mt-1 text-[10px] text-ink-mute">
+                      {credential.expiryDate
+                        ? `Ważna do ${new Date(credential.expiryDate).toLocaleDateString("pl-PL")}`
+                        : "Ważna bezterminowo"}
                     </p>
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-ink/[0.08] pt-3.5">
-                  <p className="min-w-0 truncate text-[11px] text-ink-mute">
-                    {credential.expiryDate
-                      ? `Ważna do ${new Date(credential.expiryDate).toLocaleDateString("pl-PL")}`
-                      : "Bezterminowa"}
-                  </p>
-                  <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-accent-600">
-                    Okaż
-                  </span>
-                </div>
+              {/* strefa MRZ */}
+              <div className="border-t border-ink/10 bg-[#eef1f6] px-4 py-2">
+                <p className="truncate font-mono text-[9.5px] tracking-[0.12em] text-ink-mute">
+                  {mrz(`ML24<${user.lastName}<<${user.firstName}`, 30)}
+                </p>
+                <p className="mt-0.5 truncate font-mono text-[9.5px] tracking-[0.12em] text-ink-mute">
+                  {mrz(
+                    `${credential.companyNumber ?? credential.credentialNumber}<${
+                      (credential.securityCode ?? "").replace(/-/g, "")
+                    }`,
+                    30
+                  )}
+                </p>
               </div>
             </Link>
           ))}
