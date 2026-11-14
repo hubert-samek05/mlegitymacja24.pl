@@ -7,6 +7,7 @@ import { apiGet, ApiError, clearTokens, getAccessToken, revokeSession } from "./
 export interface CurrentUser {
   id: string;
   email: string;
+  phone?: string | null;
   firstName: string;
   lastName: string;
   role: "SUPER_ADMIN" | "COMPANY_ADMIN" | "COMPANY_STAFF" | "HOLDER";

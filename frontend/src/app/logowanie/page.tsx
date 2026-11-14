@@ -16,14 +16,18 @@ import {
 } from "@/lib/api";
 
 interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: {
+  accessToken?: string;
+  refreshToken?: string;
+  requiresTwoFactor?: boolean;
+  pendingToken?: string;
+  user?: {
     role: "SUPER_ADMIN" | "COMPANY_ADMIN" | "COMPANY_STAFF" | "HOLDER";
   };
 }
 
-const roleRedirects: Record<LoginResponse["user"]["role"], string> = {
+type UserRole = NonNullable<LoginResponse["user"]>["role"];
+
+const roleRedirects: Record<UserRole, string> = {
   SUPER_ADMIN: "/panel/super-admin",
   COMPANY_ADMIN: "/panel/firma",
   COMPANY_STAFF: "/panel/firma",
@@ -77,16 +81,50 @@ export default function LogowaniePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
       const data = await apiPost<LoginResponse>("/auth/login", { email, password });
+      if (data.requiresTwoFactor && data.pendingToken) {
+        setPendingToken(data.pendingToken);
+        setTwoFactorCode("");
+        return;
+      }
+      if (!data.accessToken || !data.refreshToken || !data.user) {
+        throw new Error("Nieznany błąd");
+      }
       saveTokens(data.accessToken, data.refreshToken);
       router.push(roleRedirects[data.user.role]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nieznany błąd");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleTwoFactor(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pendingToken) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const data = await apiPost<LoginResponse>("/auth/login/2fa", {
+        pendingToken,
+        code: twoFactorCode,
+      });
+      if (!data.accessToken || !data.refreshToken || !data.user) {
+        throw new Error("Nieznany błąd");
+      }
+      saveTokens(data.accessToken, data.refreshToken);
+      router.push(roleRedirects[data.user.role]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Nieznany błąd");
+      setTwoFactorCode("");
     } finally {
       setLoading(false);
     }
@@ -174,15 +212,61 @@ export default function LogowaniePage() {
           <div className="w-full max-w-md">
             <p className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-accent-600">
               <span className="h-px w-8 bg-accent-500" />
-              Logowanie
+              {pendingToken ? "Weryfikacja dwuetapowa" : "Logowanie"}
             </p>
             <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-              Zaloguj się
+              {pendingToken ? "Wpisz kod weryfikacyjny" : "Zaloguj się"}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-              Dostęp dla firm szkoleniowych oraz absolwentów posiadających konto.
+              {pendingToken
+                ? "Otwórz aplikację uwierzytelniającą i wpisz 6-cyfrowy kod dla swojego konta."
+                : "Dostęp dla firm szkoleniowych oraz absolwentów posiadających konto."}
             </p>
 
+            {pendingToken ? (
+              <form onSubmit={handleTwoFactor} className="mt-8 space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-ink">
+                    Kod weryfikacyjny
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    autoFocus
+                    maxLength={6}
+                    value={twoFactorCode}
+                    onChange={(e) =>
+                      setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="000000"
+                    className="mt-1.5 w-full rounded-md border border-ink/15 bg-white px-4 py-3 text-center font-mono text-2xl tracking-[0.5em] shadow-sm transition-colors focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20"
+                  />
+                </div>
+
+                {error && <p className="text-sm text-red-600">{error}</p>}
+
+                <button
+                  type="submit"
+                  disabled={loading || twoFactorCode.length !== 6}
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-gradient px-6 py-3.5 text-sm font-semibold text-paper transition-all duration-300 hover:brightness-110 disabled:opacity-60"
+                >
+                  {loading ? "Weryfikacja..." : "Zweryfikuj i zaloguj"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingToken(null);
+                    setTwoFactorCode("");
+                    setError(null);
+                  }}
+                  className="w-full text-center text-[13px] font-medium text-ink-mute transition-colors hover:text-ink"
+                >
+                  ← Wróć do logowania
+                </button>
+              </form>
+            ) : (
             <form onSubmit={handleSubmit} className="mt-8 space-y-5">
               <div>
                 <label className="block text-sm font-medium text-ink">
@@ -229,6 +313,7 @@ export default function LogowaniePage() {
                 {loading ? "Logowanie..." : "Zaloguj się"}
               </button>
             </form>
+            )}
 
             <div className="mt-8 rounded-lg border border-ink/10 bg-white p-5 text-center shadow-card">
               <p className="text-sm text-ink-soft">

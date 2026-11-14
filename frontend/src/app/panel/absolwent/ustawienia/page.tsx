@@ -6,6 +6,7 @@ import { PanelShell } from "@/components/PanelShell";
 import { useCurrentUser, logout } from "@/lib/useCurrentUser";
 import { apiPost } from "@/lib/api";
 import { absolwentNavItems } from "@/lib/absolwentNav";
+import { TwoFactorCard } from "@/components/TwoFactorCard";
 
 export default function UstawieniaPage() {
   const router = useRouter();
@@ -139,25 +140,13 @@ export default function UstawieniaPage() {
         </form>
 
         {/* bezpieczeństwo */}
+        <TwoFactorCard enabled={user.twoFactorEnabled} />
+
         <div className="rounded-lg border border-ink/10 bg-white p-6 shadow-card sm:p-7">
           <div className="flex items-center gap-3">
             <p className="font-display text-lg font-semibold text-ink">Bezpieczeństwo</p>
           </div>
           <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between rounded-md bg-paper px-4 py-3.5">
-              <div className="flex items-center gap-3">
-                <p className="text-sm font-medium text-ink">Weryfikacja dwuetapowa (2FA)</p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
-                  user.twoFactorEnabled
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-ink/[0.06] text-ink-mute"
-                }`}
-              >
-                {user.twoFactorEnabled ? "Włączona" : "Wkrótce"}
-              </span>
-            </div>
             <div className="flex items-center justify-between rounded-md bg-paper px-4 py-3.5">
               <div className="flex items-center gap-3">
                 <p className="text-sm font-medium text-ink">Adres e-mail</p>

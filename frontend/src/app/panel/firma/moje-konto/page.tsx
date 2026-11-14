@@ -5,6 +5,7 @@ import { PanelShell } from "@/components/PanelShell";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import { companyNavItems } from "@/lib/companyNav";
 import { apiPatch, apiPost } from "@/lib/api";
+import { TwoFactorCard } from "@/components/TwoFactorCard";
 
 const roleLabels: Record<string, string> = {
   COMPANY_ADMIN: "Administrator firmy",
@@ -136,6 +137,10 @@ export default function MojeKontoPage() {
             {savingPassword ? "Zmienianie..." : "Zmień hasło"}
           </button>
         </form>
+
+        <div className="lg:col-span-2">
+          <TwoFactorCard enabled={user.twoFactorEnabled} />
+        </div>
       </div>
     </PanelShell>
   );
