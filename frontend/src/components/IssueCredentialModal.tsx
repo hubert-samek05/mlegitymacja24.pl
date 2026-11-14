@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ImagePlus, Trash2 } from "lucide-react";
 import { Modal } from "./Modal";
 import { requestSubscriptionPopup } from "./SubscriptionGate";
-import { apiPost } from "@/lib/api";
+import { apiPost, apiUpload } from "@/lib/api";
 
 export interface CredentialType {
   id: string;
@@ -62,6 +62,10 @@ export function IssueCredentialModal({
   const [typeRequestSending, setTypeRequestSending] = useState(false);
   const [typeRequestSent, setTypeRequestSent] = useState<string | null>(null);
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (typeBoxRef.current && !typeBoxRef.current.contains(e.target as Node)) setTypeOpen(false);
@@ -76,8 +80,27 @@ export function IssueCredentialModal({
       setNewAccount(null);
       setExistingEmail(null);
       setTypeRequestSent(null);
+      setPhotoFile(null);
+      setPhotoPreview(null);
     }
   }, [open]);
+
+  useEffect(() => () => {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+  }, [photoPreview]);
+
+  function pickPhoto(file: File | null) {
+    if (!file) return;
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  }
 
   const groupedTypes = useMemo(() => {
     const q = typeQuery.trim().toLowerCase();
@@ -108,6 +131,13 @@ export function IssueCredentialModal({
     setNewAccount(null);
     setExistingEmail(null);
     try {
+      let photoUrl: string | undefined;
+      if (photoFile) {
+        const fd = new FormData();
+        fd.append("photo", photoFile);
+        const uploaded = await apiUpload<{ photoUrl: string }>("/credentials/photo", fd);
+        photoUrl = uploaded.photoUrl;
+      }
       const created = await apiPost<{ holderAccount: { email: string; temporaryPassword?: string; isNewAccount: boolean } }>(
         "/credentials",
         {
@@ -115,6 +145,7 @@ export function IssueCredentialModal({
           credentialTypeId: selectedTypeId,
           noExpiry: expiryMode === "NONE",
           expiryDate: expiryMode === "DATE" && expiryDate ? expiryDate : undefined,
+          photoUrl,
         },
         true
       );
@@ -342,6 +373,51 @@ export function IssueCredentialModal({
             <div>
               <label className="block text-sm font-medium text-ink">Miejsce urodzenia</label>
               <input required value={form.holderPlaceOfBirth} onChange={(e) => update("holderPlaceOfBirth", e.target.value)} className={inputCls} placeholder="np. Warszawa" />
+            </div>
+          </div>
+
+          {/* zdjęcie na legitymację */}
+          <div>
+            <label className="block text-sm font-medium text-ink">Zdjęcie na legitymację (opcjonalnie)</label>
+            <div className="mt-1.5 flex items-center gap-4">
+              <div className="h-20 w-16 shrink-0 overflow-hidden rounded-md border border-ink/15 bg-paper">
+                {photoPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photoPreview} alt="Zdjęcie na legitymację" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-ink-mute">
+                    <ImagePlus className="h-5 w-5" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => pickPhoto(e.target.files?.[0] ?? null)}
+                />
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="rounded-md border border-ink/15 px-3.5 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink/5"
+                >
+                  {photoPreview ? "Zmień zdjęcie" : "Dodaj zdjęcie"}
+                </button>
+                {photoPreview && (
+                  <button
+                    type="button"
+                    onClick={clearPhoto}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:underline"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Usuń
+                  </button>
+                )}
+                <p className="text-[11px] leading-snug text-ink-mute">
+                  PNG/JPG/WebP, maks. 10 MB — pojawi się na legitymacji i przy weryfikacji.
+                </p>
+              </div>
             </div>
           </div>
 

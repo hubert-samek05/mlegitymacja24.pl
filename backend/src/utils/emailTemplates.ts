@@ -15,6 +15,9 @@ const LINE = '#e3e8f2';
 const PAPER = '#f4f6fa';
 const FONT = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 
+export const APP_STORE_URL = 'https://apps.apple.com/us/app/mlegitymacja24-pl/id6834377120';
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=mLegitymacja24.pl';
+
 function esc(value: unknown): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -121,10 +124,16 @@ function baseEmail(o: BaseOptions): string {
     <td align="center" style="padding:24px 24px 30px;border-top:1px solid ${LINE};background:#ffffff;">
       <table role="presentation" width="720" cellpadding="0" cellspacing="0" style="max-width:720px;width:100%;">
         <tr><td>
-          <p style="margin:0 0 6px;font-family:${FONT};font-size:12px;line-height:1.6;color:${MUTE};">
+          <p style="margin:0 0 10px;font-family:${FONT};font-size:12px;line-height:1.6;color:${MUTE};">
             <strong style="color:${INK};">mLegitymacja24</strong> — cyfrowe legitymacje zawodowe ·
             <a href="mailto:kontakt@mlegitymacja24.pl" style="color:${NAVY_DARK};text-decoration:none;">kontakt@mlegitymacja24.pl</a> ·
             <a href="${appUrl}" style="color:${NAVY_DARK};text-decoration:none;">mlegitymacja24.pl</a>
+          </p>
+          <p style="margin:0 0 10px;font-family:${FONT};font-size:12px;line-height:1.6;">
+            <strong style="color:${INK};">Zainstaluj aplikację mobilną:</strong>&nbsp;
+            <a href="${APP_STORE_URL}" style="color:${NAVY};font-weight:600;text-decoration:none;">App Store (iPhone)</a>
+            <span style="color:${MUTE};">&nbsp;·&nbsp;</span>
+            <a href="${PLAY_STORE_URL}" style="color:${NAVY};font-weight:600;text-decoration:none;">Google Play (Android)</a>
           </p>
           <p style="margin:0;font-family:${FONT};font-size:11px;line-height:1.6;color:${MUTE};">
             <a href="${appUrl}/regulamin" style="color:${MUTE};text-decoration:underline;">Regulamin</a> ·
@@ -518,7 +527,7 @@ export function tplCredentialExpiringCompany(
         { label: 'Numer', value: credentialNumber },
         { label: 'Ważna do', value: expiryDate.toLocaleDateString('pl-PL') },
       ],
-      cta: { label: 'Zarządzaj legitymacjami', url: panel('/panel/firma/legitymacje') },
+      cta: { label: 'Zarządzaj legitymacjami', url: panel('/panel/firma') },
     }),
   };
 }
@@ -557,6 +566,41 @@ export function tplPasswordReset(name: string, resetUrl: string): EmailContent {
         text: 'Jeśli to nie Ty prosiłeś o reset hasła, zignoruj tę wiadomość — Twoje hasło pozostanie bez zmian.',
         tone: 'warn',
       },
+    }),
+  };
+}
+
+export function tplHolderWelcome(firstName: string): EmailContent {
+  return {
+    subject: 'Witaj w mLegitymacja24 — Twoje konto jest gotowe',
+    html: baseEmail({
+      title: 'Twoje konto zostało utworzone',
+      greeting: `Dzień dobry ${esc(firstName)},`,
+      paragraphs: [
+        'utworzyłeś konto w cyfrowym portfelu mLegitymacja24.',
+        'Gdy firma szkoleniowa wystawi Ci legitymację, pojawi się w Twoim portfelu automatycznie — poinformujemy Cię o tym osobną wiadomością.',
+        'Zainstaluj aplikację mobilną mLegitymacja24 (linki poniżej) — dokumenty masz wtedy zawsze przy sobie, gotowe do pokazania kodem QR do weryfikacji.',
+      ],
+      cta: { label: 'Otwórz portfel legitymacji', url: panel('/logowanie') },
+    }),
+  };
+}
+
+export function tplStaffInvited(firstName: string, companyName: string, email: string): EmailContent {
+  return {
+    subject: `Zaproszenie do zespołu — ${companyName}`,
+    html: baseEmail({
+      title: 'Utworzono Ci konto w panelu firmy',
+      greeting: `Dzień dobry ${esc(firstName)},`,
+      paragraphs: [
+        `administrator firmy <strong>${esc(companyName)}</strong> utworzył Ci konto pracownika na platformie mLegitymacja24.`,
+        'Hasło do pierwszego logowania przekaże Ci bezpośrednio administrator Twojej firmy — z powodów bezpieczeństwa nie wysyłamy go w tej wiadomości.',
+      ],
+      rows: [{ label: 'Login', value: email }],
+      cta: { label: 'Zaloguj się do panelu firmy', url: panel('/logowanie') },
+      afterCta: [
+        'Po pierwszym logowaniu zalecamy zmianę hasła oraz włączenie weryfikacji dwuetapowej w ustawieniach konta.',
+      ],
     }),
   };
 }

@@ -9,7 +9,7 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { recordAuditLog } from '../middleware/auditLog';
 import { env } from '../config/env';
 import { sendEmail } from '../utils/mailer';
-import { tplPasswordReset } from '../utils/emailTemplates';
+import { tplHolderWelcome, tplPasswordReset } from '../utils/emailTemplates';
 import { generateTotpSecret, otpauthUrl, verifyTotp } from '../utils/totp';
 import { authenticate, AuthRequest } from '../middleware/auth';
 
@@ -87,6 +87,9 @@ router.post(
     });
 
     await recordAuditLog({ userId: user.id, action: 'USER_REGISTERED', entityType: 'User', entityId: user.id });
+
+    const welcome = tplHolderWelcome(firstName);
+    await sendEmail(email, welcome.subject, welcome.html).catch(() => undefined);
 
     const accessToken = signAccessToken({ userId: user.id, role: user.role, companyId: null });
     const refreshToken = signRefreshToken({ userId: user.id });

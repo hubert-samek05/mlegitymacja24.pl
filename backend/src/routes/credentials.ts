@@ -1,7 +1,11 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import crypto from 'crypto';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { prisma } from '../config/prisma';
+import { env } from '../config/env';
 import { asyncHandler } from '../utils/asyncHandler';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { recordAuditLog } from '../middleware/auditLog';
@@ -17,6 +21,52 @@ function generateTemporaryPassword(): string {
 }
 
 const router = Router();
+
+// Upload zdjęcia absolwenta na legitymację - katalog uploads, serwowany pod /uploads
+const uploadsPath = path.join(process.cwd(), env.uploadDir);
+fs.mkdirSync(uploadsPath, { recursive: true });
+
+const photoUpload = multer({
+  storage: multer.diskStorage({
+    destination: uploadsPath,
+    filename: (_req, file, cb) => {
+      const ext = { 'image/png': '.png', 'image/jpeg': '.jpg', 'image/webp': '.webp' }[file.mimetype] ?? '.jpg';
+      cb(null, `holder-${crypto.randomUUID()}${ext}`);
+    },
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (['image/png', 'image/jpeg', 'image/webp'].includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Dozwolone formaty zdjęcia: PNG, JPG lub WebP'));
+  },
+});
+
+const photoMiddleware = (req: AuthRequest, res: Response, next: () => void) => {
+  photoUpload.single('photo')(req, res, (err: unknown) => {
+    if (err) {
+      const msg = err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'
+        ? 'Plik zdjęcia jest za duży — maksymalny rozmiar to 10 MB'
+        : err instanceof Error ? err.message : 'Nieprawidłowy plik zdjęcia';
+      return res.status(400).json({ error: msg });
+    }
+    next();
+  });
+};
+
+// Upload zdjęcia na legitymację - zwraca URL do przekazania jako photoUrl przy wystawianiu
+router.post(
+  '/photo',
+  authenticate,
+  authorize('COMPANY_ADMIN', 'COMPANY_STAFF'),
+  requirePermission('credentials.issue'),
+  photoMiddleware,
+  asyncHandler(async (req: AuthRequest, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nie przesłano pliku zdjęcia' });
+    }
+    res.status(201).json({ photoUrl: `/uploads/${req.file.filename}` });
+  })
+);
 
 function generateCredentialNumber(): string {
   const year = new Date().getFullYear();

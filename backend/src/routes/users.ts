@@ -7,6 +7,8 @@ import { hashPassword, comparePassword } from '../utils/password';
 import { recordAuditLog } from '../middleware/auditLog';
 import { assertCanAddStaff } from '../utils/entitlements';
 import { sanitizePermissions } from '../utils/permissions';
+import { sendEmail } from '../utils/mailer';
+import { tplStaffInvited } from '../utils/emailTemplates';
 
 const router = Router();
 
@@ -76,6 +78,10 @@ router.post(
       entityType: 'User',
       entityId: staff.id,
     });
+
+    const company = await prisma.company.findUnique({ where: { id: req.user!.companyId! }, select: { name: true } });
+    const invite = tplStaffInvited(firstName, company?.name ?? '', email);
+    await sendEmail(email, invite.subject, invite.html).catch(() => undefined);
 
     res.status(201).json({ id: staff.id, email: staff.email, firstName: staff.firstName, lastName: staff.lastName });
   })
