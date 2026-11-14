@@ -95,6 +95,28 @@ function baseEmail(o: BaseOptions): string {
     .map((p) => `<p style="margin:0 0 14px;font-family:${FONT};font-size:14px;line-height:1.6;color:${MUTE};">${p}</p>`)
     .join('');
 
+  const storeBadge = (href: string, top: string, bottom: string) => `
+        <a href="${href}" style="display:block;background:#0d1526;border-radius:9px;padding:10px 16px;text-decoration:none;text-align:center;">
+          <span style="display:block;font-family:${FONT};font-size:10px;line-height:1.2;color:#8b97b8;">${top}</span>
+          <span style="display:block;font-family:${FONT};font-size:15px;line-height:1.35;font-weight:700;color:#ffffff;">${bottom}</span>
+        </a>`;
+
+  const appButtonsHtml = `<tr><td style="padding:22px 0 6px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${LINE};">
+          <tr><td align="center" style="padding:22px 0 12px;font-family:${FONT};font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:${MUTE};">
+            Aplikacja mobilna mLegitymacja24 — dokumenty zawsze przy sobie
+          </td></tr>
+          <tr><td align="center" style="padding:0;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="padding-right:8px;">${storeBadge(APP_STORE_URL, 'Pobierz w', 'App&nbsp;Store')}</td>
+                <td style="padding-left:8px;">${storeBadge(PLAY_STORE_URL, 'Do pobrania w', 'Google&nbsp;Play')}</td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>`;
+
   return `<!DOCTYPE html>
 <html lang="pl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(o.title)}</title></head>
@@ -117,6 +139,7 @@ function baseEmail(o: BaseOptions): string {
         ${rowsHtml}
         ${ctaHtml}
         ${afterCta ? `<tr><td style="padding:4px 0 0;">${afterCta}</td></tr>` : ''}
+        ${appButtonsHtml}
       </table>
     </td>
   </tr>
@@ -128,12 +151,6 @@ function baseEmail(o: BaseOptions): string {
             <strong style="color:${INK};">mLegitymacja24</strong> — cyfrowe legitymacje zawodowe ·
             <a href="mailto:kontakt@mlegitymacja24.pl" style="color:${NAVY_DARK};text-decoration:none;">kontakt@mlegitymacja24.pl</a> ·
             <a href="${appUrl}" style="color:${NAVY_DARK};text-decoration:none;">mlegitymacja24.pl</a>
-          </p>
-          <p style="margin:0 0 10px;font-family:${FONT};font-size:12px;line-height:1.6;">
-            <strong style="color:${INK};">Zainstaluj aplikację mobilną:</strong>&nbsp;
-            <a href="${APP_STORE_URL}" style="color:${NAVY};font-weight:600;text-decoration:none;">App Store (iPhone)</a>
-            <span style="color:${MUTE};">&nbsp;·&nbsp;</span>
-            <a href="${PLAY_STORE_URL}" style="color:${NAVY};font-weight:600;text-decoration:none;">Google Play (Android)</a>
           </p>
           <p style="margin:0;font-family:${FONT};font-size:11px;line-height:1.6;color:${MUTE};">
             <a href="${appUrl}/regulamin" style="color:${MUTE};text-decoration:underline;">Regulamin</a> ·
