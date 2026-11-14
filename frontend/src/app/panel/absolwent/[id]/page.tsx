@@ -58,7 +58,7 @@ function resolvePhoto(url: string | null | undefined): string | null {
 export default function PrezentacjaLegitymacjiPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { user, loading: userLoading } = useCurrentUser();
+  const { user, loading: userLoading } = useCurrentUser(["HOLDER"]);
 
   const [credential, setCredential] = useState<CredentialDetail | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);

@@ -56,7 +56,7 @@ function formatDate(iso: string) {
 }
 
 export default function HistoriaPage() {
-  const { user, loading: userLoading } = useCurrentUser();
+  const { user, loading: userLoading } = useCurrentUser(["HOLDER"]);
   const [logs, setLogs] = useState<VerificationLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
