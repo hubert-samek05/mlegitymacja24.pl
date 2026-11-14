@@ -43,6 +43,7 @@ interface BaseOptions {
   highlight?: { text: string; tone?: 'info' | 'warn' | 'ok' };
   cta?: { label: string; url: string };
   afterCta?: string[];
+  appButtonsTop?: boolean;
 }
 
 function baseEmail(o: BaseOptions): string {
@@ -99,7 +100,7 @@ function baseEmail(o: BaseOptions): string {
         <a href="${href}"><img src="${appUrl}/${img}" alt="${alt}" height="44" style="display:block;height:44px;border:0;border-radius:9px;"></a>`;
 
   const appButtonsHtml = `<tr><td style="padding:22px 0 6px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${LINE};">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" ${o.appButtonsTop ? '' : `style="border-top:1px solid ${LINE};"`}>
           <tr><td align="center" style="padding:22px 0 12px;font-family:${FONT};font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:${MUTE};">
             Aplikacja mobilna mLegitymacja24 — dokumenty zawsze przy sobie
           </td></tr>
@@ -132,11 +133,12 @@ function baseEmail(o: BaseOptions): string {
           <h1 style="margin:0 0 20px;font-family:${FONT};font-size:22px;font-weight:700;color:${NAVY};line-height:1.3;">${esc(o.title)}</h1>
           ${paragraphs}
         </td></tr>
+        ${o.appButtonsTop ? appButtonsHtml : ''}
         ${highlightHtml}
         ${rowsHtml}
         ${ctaHtml}
         ${afterCta ? `<tr><td style="padding:4px 0 0;">${afterCta}</td></tr>` : ''}
-        ${appButtonsHtml}
+        ${o.appButtonsTop ? '' : appButtonsHtml}
       </table>
     </td>
   </tr>
@@ -594,6 +596,7 @@ export function tplAppInstallReminder(firstName: string): EmailContent {
         'masz już cyfrową legitymację w portfelu mLegitymacja24. Zainstaluj darmową aplikację mobilną, żeby mieć dokument zawsze przy sobie — w telefonie, nie w e-mailu.',
         'W aplikacji okażesz legitymację kodem QR w kilka sekund, a pracodawca lub klient zweryfikuje ją od razu na publicznej stronie weryfikacyjnej. Przypomnimy Ci też, gdy dokument będzie zbliżał się do końca ważności.',
       ],
+      appButtonsTop: true,
       highlight: { text: 'W aplikacji zaloguj się tym samym adresem e-mail i hasłem, którym logujesz się w portalu.' },
       cta: { label: 'Otwórz portfel w przeglądarce', url: panel('/logowanie') },
       afterCta: [
