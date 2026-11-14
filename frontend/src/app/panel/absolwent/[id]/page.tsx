@@ -54,6 +54,111 @@ function resolvePhoto(url: string | null | undefined): string | null {
   return url.startsWith("http") ? url : `${API_HOST}${url}`;
 }
 
+function mrz(input: string): string {
+  const clean = input
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ł/g, "l")
+    .replace(/Ł/g, "L")
+    .toUpperCase()
+    .replace(/[^A-Z0-9<]/g, "<");
+  return (clean + "<".repeat(38)).slice(0, 38);
+}
+
+function Guilloche({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 400 60"
+      preserveAspectRatio="none"
+      className={className}
+      aria-hidden
+    >
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <path
+          key={i}
+          d={`M-20 ${10 + i * 8} C 60 ${-14 + i * 8}, 140 ${34 + i * 8}, 220 ${
+            10 + i * 8
+          } S 380 ${-14 + i * 8}, 440 ${10 + i * 8}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="0.8"
+        />
+      ))}
+    </svg>
+  );
+}
+
+function Seal({
+  status,
+  label,
+}: {
+  status: CredentialDetail["status"];
+  label: string;
+}) {
+  const color =
+    status === "ACTIVE"
+      ? "#059669"
+      : status === "EXPIRED"
+        ? "#d97706"
+        : status === "REVOKED"
+          ? "#dc2626"
+          : "#6b7280";
+  const arc = `MLEGITYMACJA24 · ${label.toUpperCase()} · `;
+  return (
+    <svg
+      viewBox="0 0 96 96"
+      className="absolute -top-1 right-0 h-[72px] w-[72px] -rotate-12 opacity-90"
+      aria-hidden
+    >
+      <defs>
+        <path
+          id="sealArcTop"
+          d="M48,48 m-34,0 a34,34 0 1,1 68,0 a34,34 0 1,1 -68,0"
+        />
+      </defs>
+      <circle cx="48" cy="48" r="44" fill="none" stroke={color} strokeWidth="1.6" />
+      <circle
+        cx="48"
+        cy="48"
+        r="26"
+        fill="none"
+        stroke={color}
+        strokeWidth="1"
+        strokeDasharray="2 2"
+      />
+      <text
+        fill={color}
+        fontSize="9"
+        fontWeight="700"
+        letterSpacing="1.6"
+        fontFamily="inherit"
+      >
+        <textPath href="#sealArcTop" startOffset="0">
+          {arc + arc}
+        </textPath>
+      </text>
+      {status === "ACTIVE" ? (
+        <path
+          d="M36 49 l8 8 l16 -17"
+          fill="none"
+          stroke={color}
+          strokeWidth="4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      ) : (
+        <path
+          d="M38 38 l20 20 M58 38 l-20 20"
+          fill="none"
+          stroke={color}
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
+      )}
+    </svg>
+  );
+}
+
 export default function PrezentacjaLegitymacjiPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -160,30 +265,52 @@ export default function PrezentacjaLegitymacjiPage() {
             {error}
           </p>
         ) : credential && status ? (
-          <div className="w-full max-w-[22rem] sm:max-w-2xl">
+          <div className="w-full max-w-[24rem] sm:max-w-[26rem]">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden rounded-lg bg-white text-ink shadow-2xl shadow-black/40"
+              className="overflow-hidden rounded-2xl bg-white text-ink shadow-2xl shadow-black/50 ring-1 ring-black/10"
             >
-              {/* nagłówek dokumentu */}
-              <div className="flex items-center justify-between border-b border-ink/[0.08] px-6 py-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-mute">
-                  Legitymacja zawodowa
-                </p>
-                <span className={`flex items-center gap-1.5 text-xs font-medium ${status.text}`}>
-                  <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
-                  {status.label}
-                </span>
+              {/* pasek urzędowy */}
+              <div className="relative overflow-hidden bg-brand-950 px-5 py-4 text-paper">
+                <Guilloche className="absolute inset-0 h-full w-full text-brand-300/25" />
+                <div className="relative flex items-center justify-between gap-3">
+                  <div>
+                    <p className="font-display text-[15px] font-semibold tracking-wide">
+                      MLEGITYMACJA<span className="text-accent-400">24</span>
+                    </p>
+                    <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.28em] text-brand-300">
+                      Dokument cyfrowy
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-display text-[13px] font-semibold uppercase tracking-[0.14em]">
+                      Legitymacja zawodowa
+                    </p>
+                    <p className="mt-0.5 text-[9px] uppercase tracking-[0.2em] text-brand-300">
+                      {credential.credentialType.name}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* treść: mobile pionowo / desktop poziomo */}
-              <div className="sm:flex">
-                <div className="min-w-0 flex-1 px-6 py-6">
-                  {/* tożsamość */}
-                  <div className="flex items-center gap-4">
-                    <div className="h-[104px] w-[82px] shrink-0 overflow-hidden rounded-lg border border-ink/10 bg-paper">
+              {/* korpus dokumentu */}
+              <div className="relative">
+                {/* znak wodny */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-v2.png"
+                  alt=""
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 top-1/2 w-[85%] -translate-x-1/2 -translate-y-1/2 select-none opacity-[0.05]"
+                />
+                <Guilloche className="pointer-events-none absolute inset-x-0 top-0 h-10 w-full text-brand-900/[0.06]" />
+
+                <div className="relative px-5 py-5">
+                  <div className="flex gap-4">
+                    {/* zdjęcie */}
+                    <div className="h-[108px] w-[84px] shrink-0 overflow-hidden rounded-md border border-ink/15 bg-paper shadow-sm">
                       {photoSrc ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -197,44 +324,60 @@ export default function PrezentacjaLegitymacjiPage() {
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <h2 className="break-words font-display text-xl font-semibold leading-tight tracking-tight">
+
+                    {/* dane */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-ink-mute">
+                        Imię i nazwisko
+                      </p>
+                      <h2 className="mt-0.5 break-words font-display text-[19px] font-semibold leading-tight tracking-tight">
                         {holderName}
                       </h2>
-                      <dl className="mt-2 space-y-1 text-[13px]">
+                      <dl className="mt-3 space-y-1.5 text-[12px]">
                         {credential.holder.dateOfBirth && (
-                          <div className="flex gap-2">
-                            <dt className="text-ink-mute">ur.</dt>
+                          <div className="flex justify-between gap-3 border-b border-ink/[0.07] pb-1.5">
+                            <dt className="text-ink-mute">Data urodzenia</dt>
                             <dd className="font-medium">
                               {new Date(credential.holder.dateOfBirth).toLocaleDateString("pl-PL")}
                             </dd>
                           </div>
                         )}
                         {credential.holder.placeOfBirth && (
-                          <div className="flex gap-2">
-                            <dt className="text-ink-mute">miejsce ur.</dt>
-                            <dd className="font-medium">{credential.holder.placeOfBirth}</dd>
-                          </div>
-                        )}
-                        {credential.holder.user.phone && (
-                          <div className="flex gap-2">
-                            <dt className="text-ink-mute">tel.</dt>
-                            <dd className="break-all font-medium">
-                              {credential.holder.user.phone}
+                          <div className="flex justify-between gap-3 border-b border-ink/[0.07] pb-1.5">
+                            <dt className="text-ink-mute">Miejsce ur.</dt>
+                            <dd className="break-words text-right font-medium">
+                              {credential.holder.placeOfBirth}
                             </dd>
                           </div>
                         )}
+                        <div className="flex justify-between gap-3 border-b border-ink/[0.07] pb-1.5">
+                          <dt className="text-ink-mute">Uprawnienie</dt>
+                          <dd className="break-words text-right font-medium">
+                            {credential.credentialType.name}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between gap-3 border-b border-ink/[0.07] pb-1.5">
+                          <dt className="text-ink-mute">Wystawiona</dt>
+                          <dd className="font-medium">
+                            {new Date(credential.issueDate).toLocaleDateString("pl-PL")}
+                          </dd>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-ink-mute">Ważna do</dt>
+                          <dd className="font-medium">
+                            {credential.expiryDate
+                              ? new Date(credential.expiryDate).toLocaleDateString("pl-PL")
+                              : "Bezterminowo"}
+                          </dd>
+                        </div>
                       </dl>
                     </div>
                   </div>
 
-                  {/* uprawnienie */}
-                  <div className="mt-6 border-t border-ink/[0.08] pt-5">
-                    <p className="break-words font-display text-lg font-semibold leading-snug">
-                      {credential.credentialType.name}
-                    </p>
-                    <div className="mt-2.5 flex items-start gap-2.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded border border-ink/10 bg-paper">
+                  {/* wystawca + pieczęć + QR */}
+                  <div className="relative mt-5 flex items-end gap-4 border-t border-ink/[0.09] pt-4">
+                    <div className="flex min-w-0 flex-1 items-start gap-2.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded border border-ink/10 bg-white">
                         {resolvePhoto(credential.company.logoUrl) ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -249,60 +392,22 @@ export default function PrezentacjaLegitymacjiPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="break-words text-[13px] font-medium text-ink">
+                        <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-ink-mute">
+                          Wystawca
+                        </p>
+                        <p className="mt-0.5 break-words text-[12px] font-medium leading-snug">
                           {credential.company.name}
                         </p>
-                        <p className="mt-0.5 text-[11px] text-ink-mute">
+                        <p className="mt-0.5 text-[10px] text-ink-mute">
                           NIP {credential.company.nip}
-                          {credential.company.regon ? ` · REGON ${credential.company.regon}` : ""}
                         </p>
-                        {(credential.company.address || credential.company.city) && (
-                          <p className="mt-0.5 break-words text-[11px] text-ink-mute">
-                            {[credential.company.address, [credential.company.postalCode, credential.company.city].filter(Boolean).join(" ")].filter(Boolean).join(", ")}
-                          </p>
-                        )}
                       </div>
                     </div>
-                  </div>
 
-                  {/* meta */}
-                  <div className="mt-5 grid grid-cols-3 gap-4 border-t border-ink/[0.08] pt-5">
-                    <div className="col-span-3 sm:col-span-1">
-                      <p className="text-[11px] text-ink-mute">Nr legitymacji</p>
-                      <p className="mt-0.5 break-all text-xs font-medium">
-                        {credential.companyNumber ?? credential.credentialNumber}
-                      </p>
-                    </div>
-                    <div className="col-span-3 sm:col-span-2">
-                      <p className="text-[11px] text-ink-mute">Identyfikator mLegitymacji</p>
-                      <p className="mt-0.5 font-mono text-xs font-medium tracking-wider">
-                        {formatSecurityCode(credential.securityCode)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-ink-mute">Wystawiona</p>
-                      <p className="mt-0.5 text-xs font-medium">
-                        {new Date(credential.issueDate).toLocaleDateString("pl-PL")}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-ink-mute">Ważna do</p>
-                      <p className="mt-0.5 text-xs font-medium">
-                        {credential.expiryDate
-                          ? new Date(credential.expiryDate).toLocaleDateString("pl-PL")
-                          : "Bezterminowo"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* QR */}
-                <div className="flex flex-col items-center justify-center border-t border-ink/[0.08] px-6 py-6 sm:w-[220px] sm:shrink-0 sm:border-l sm:border-t-0">
-                  {credential.status === "ACTIVE" ? (
-                    <>
+                    {credential.status === "ACTIVE" ? (
                       <button
                         onClick={() => qrDataUrl && setQrOpen(true)}
-                        className="group relative rounded-md border border-ink/10 p-2.5 transition-colors hover:border-ink/25"
+                        className="group relative shrink-0 rounded-md border border-ink/15 bg-white p-1.5 transition-colors hover:border-ink/30"
                         aria-label="Powiększ kod QR"
                       >
                         {qrDataUrl ? (
@@ -310,52 +415,54 @@ export default function PrezentacjaLegitymacjiPage() {
                           <img
                             src={qrDataUrl}
                             alt="Kod weryfikacyjny"
-                            className="h-[140px] w-[140px]"
+                            className="h-[76px] w-[76px]"
                           />
                         ) : (
-                          <div className="flex h-[140px] w-[140px] items-center justify-center text-xs text-ink-mute">
-                            Generowanie...
+                          <div className="flex h-[76px] w-[76px] items-center justify-center text-[9px] text-ink-mute">
+                            QR...
                           </div>
                         )}
-                        <span className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-ink/10 bg-white text-ink-mute shadow-sm transition-colors group-hover:text-ink">
-                          <Expand className="h-3 w-3" />
+                        <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ink/10 bg-white text-ink-mute shadow-sm transition-colors group-hover:text-ink">
+                          <Expand className="h-2.5 w-2.5" />
                         </span>
                       </button>
-                      <p className="mt-3 text-center text-[11px] text-ink-mute">
-                        Dotknij, aby powiększyć
-                      </p>
-                      <div className="mt-3 w-full max-w-[140px]">
-                        <div className="h-px w-full bg-ink/10">
-                          <div
-                            className="h-px bg-accent-500 transition-all duration-1000 ease-linear"
-                            style={{ width: `${progress * 100}%` }}
-                          />
-                        </div>
-                        <p className="mt-1.5 text-center text-[10px] text-ink-mute">
-                          odświeżenie za {secondsLeft} s
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center py-4 text-center">
-                      <p className="mt-2 text-[13px] font-medium">
-                        Dokument {status.label.toLowerCase()}
-                      </p>
-                      <p className="mt-1 max-w-[160px] text-[11px] leading-relaxed text-ink-mute">
-                        Weryfikacja kodem QR jest obecnie niedostępna.
-                      </p>
-                    </div>
-                  )}
+                    ) : null}
+
+                    {/* pieczęć statusu */}
+                    <Seal status={credential.status} label={status.label} />
+                  </div>
                 </div>
               </div>
 
-              {/* stopka */}
-              <div className="border-t border-ink/[0.08] px-6 py-3">
-                <p className="text-center text-[10px] text-ink-mute">
-                  mLegitymacja24 · Dokument cyfrowy
+              {/* strefa odczytu maszynowego */}
+              <div className="border-t border-ink/10 bg-[#eef1f6] px-5 py-3">
+                <p className="truncate font-mono text-[11px] tracking-[0.14em] text-ink-soft">
+                  {mrz(`ML24<${holderName.replace(" ", "<<")}`)}
+                </p>
+                <p className="mt-0.5 truncate font-mono text-[11px] tracking-[0.14em] text-ink-soft">
+                  {mrz(
+                    `${credential.companyNumber ?? credential.credentialNumber}<${
+                      (credential.securityCode ?? "").replace(/-/g, "")
+                    }`
+                  )}
                 </p>
               </div>
             </motion.div>
+
+            {/* pasek odświeżania QR pod dokumentem */}
+            {credential.status === "ACTIVE" && (
+              <div className="mt-5 flex items-center justify-center gap-3">
+                <div className="h-px w-24 bg-white/15">
+                  <div
+                    className="h-px bg-accent-400 transition-all duration-1000 ease-linear"
+                    style={{ width: `${progress * 100}%` }}
+                  />
+                </div>
+                <p className="text-[11px] text-brand-300">
+                  Kod odświeżany co {TOKEN_TTL_SECONDS} s · dotknij QR, aby powiększyć
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-sm text-brand-300">Ładowanie legitymacji...</p>
