@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -35,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body className={`${inter.variable} ${display.variable} font-sans antialiased text-ink`}>
+        <DeepLinkHandler />
         {children}
       </body>
     </html>

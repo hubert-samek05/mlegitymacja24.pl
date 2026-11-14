@@ -1,0 +1,20 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "22MYTLYQ6T.pl.mlegitymacja24.app",
+        "paths": [
+          "/logowanie*",
+          "/panel/*",
+          "/reset-hasla*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "22MYTLYQ6T.pl.mlegitymacja24.app"
+    ]
+  }
+}
