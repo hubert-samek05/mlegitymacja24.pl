@@ -218,7 +218,7 @@ export default function PrezentacjaLegitymacjiPage() {
 
   if (userLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-brand-950 text-sm text-brand-300">
+      <div className="flex min-h-screen items-center justify-center bg-paper text-sm text-ink-mute">
         Ładowanie...
       </div>
     );
@@ -240,20 +240,20 @@ export default function PrezentacjaLegitymacjiPage() {
   const status = credential ? statusMeta[credential.status] : null;
 
   return (
-    <div className="relative -mt-[env(safe-area-inset-top)] flex min-h-screen flex-col overflow-hidden bg-brand-950 pt-[env(safe-area-inset-top)] text-paper">
-      <div className="absolute inset-0 bg-grid opacity-30" />
-      <div className="absolute -top-32 left-1/2 h-80 w-[560px] -translate-x-1/2 rounded-full bg-brand-500/15 blur-3xl" />
+    <div className="relative -mt-[env(safe-area-inset-top)] flex min-h-screen flex-col overflow-hidden bg-paper pt-[env(safe-area-inset-top)] text-ink">
+      <div className="absolute inset-0 bg-grid-light opacity-60" />
+      <div className="absolute -top-32 left-1/2 h-80 w-[560px] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl" />
 
       {/* ===== nagłówek ===== */}
       <header className="relative flex items-center justify-between px-5 py-4 sm:px-8">
         <button
           onClick={() => router.push("/panel/absolwent")}
-          className="flex items-center gap-2 rounded-md border border-white/15 px-4 py-2 text-xs font-semibold text-paper transition-colors hover:bg-white/10"
+          className="flex items-center gap-2 rounded-md border border-ink/15 bg-white px-4 py-2 text-xs font-semibold text-ink shadow-sm transition-colors hover:bg-paper"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Portfel
         </button>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-brand-300">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-mute">
           Podgląd dokumentu
         </p>
       </header>
@@ -261,7 +261,7 @@ export default function PrezentacjaLegitymacjiPage() {
       {/* ===== dokument ===== */}
       <main className="relative flex flex-1 items-start justify-center px-5 pb-14 pt-2 sm:items-center">
         {error && !credential ? (
-          <p className="rounded-md border border-red-400/30 bg-red-400/10 px-5 py-4 text-sm text-red-200">
+          <p className="rounded-md border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
             {error}
           </p>
         ) : credential && status ? (
@@ -276,13 +276,23 @@ export default function PrezentacjaLegitymacjiPage() {
               <div className="relative overflow-hidden bg-brand-950 px-5 py-4 text-paper">
                 <Guilloche className="absolute inset-0 h-full w-full text-brand-300/25" />
                 <div className="relative flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-display text-[15px] font-semibold tracking-wide">
-                      MLEGITYMACJA<span className="text-accent-400">24</span>
-                    </p>
-                    <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.28em] text-brand-300">
-                      Dokument cyfrowy
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-lg bg-white p-1 shadow-sm">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/logo-v2.png"
+                        alt="mLegitymacja24"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-display text-[15px] font-semibold tracking-wide">
+                        MLEGITYMACJA<span className="text-accent-400">24</span>
+                      </p>
+                      <p className="mt-0.5 text-[9px] font-medium uppercase tracking-[0.28em] text-brand-300">
+                        Dokument cyfrowy
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
                     <p className="font-display text-[13px] font-semibold uppercase tracking-[0.14em]">
@@ -452,20 +462,20 @@ export default function PrezentacjaLegitymacjiPage() {
             {/* pasek odświeżania QR pod dokumentem */}
             {credential.status === "ACTIVE" && (
               <div className="mt-5 flex items-center justify-center gap-3">
-                <div className="h-px w-24 bg-white/15">
+                <div className="h-px w-24 bg-ink/10">
                   <div
-                    className="h-px bg-accent-400 transition-all duration-1000 ease-linear"
+                    className="h-px bg-accent-500 transition-all duration-1000 ease-linear"
                     style={{ width: `${progress * 100}%` }}
                   />
                 </div>
-                <p className="text-[11px] text-brand-300">
+                <p className="text-[11px] text-ink-mute">
                   Kod odświeżany co {TOKEN_TTL_SECONDS} s · dotknij QR, aby powiększyć
                 </p>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-sm text-brand-300">Ładowanie legitymacji...</p>
+          <p className="text-sm text-ink-mute">Ładowanie legitymacji...</p>
         )}
       </main>
 
